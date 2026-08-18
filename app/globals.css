@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-paper: #f3efe6;
+  --color-card: #fffdf8;
+  --color-ink: #1f1c16;
+  --color-stone: #5c564c;
+  --color-line: #e4ddd0;
+  --color-pine: #2f5d50;
+  --color-pine-soft: #e4efea;
+  --color-klint: #3d5a80;
+  --color-warn: #8a6a2f;
+  --color-warn-bg: #f6efd8;
+  --color-stop: #8f3d2c;
+  --color-stop-bg: #f8e7e2;
+  --color-ok: #3f6b4c;
+  --color-ok-bg: #e6f0e8;
+  --font-sans: var(--font-geist-sans);
+  --font-serif: var(--font-source-serif);
+}
+
+html,
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  min-height: 100dvh;
+}
+
+.font-serif {
+  font-family: var(--font-serif), "Source Serif 4", ui-serif, Georgia, serif;
+}
+
+::selection {
+  background: var(--color-pine-soft);
+  color: var(--color-ink);
+}
+
+input[type="date"],
+input[type="month"],
+input[type="email"],
+input[type="tel"],
+input[type="text"],
+textarea,
+select {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
