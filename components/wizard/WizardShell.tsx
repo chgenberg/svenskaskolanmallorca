@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { SchoolLogo } from "@/components/brand/SchoolLogo";
 import { Button } from "@/components/ui";
 import { getStops } from "@/lib/wizard/gates";
 import { getSteps, stepIndex } from "@/lib/wizard/steps";
@@ -50,12 +51,15 @@ export function WizardShell() {
   return (
     <div className="min-h-dvh px-4 pb-16 pt-6 sm:px-6">
       <header className="mx-auto flex w-full max-w-[720px] items-center justify-between gap-3">
-        <div>
-          <Link href="/" className="text-[13px] font-medium text-stone hover:text-ink">
-            Underlaget
-          </Link>
-          <p className="text-[15px] text-ink">Gymnasiet</p>
-        </div>
+        <Link href="/" className="flex items-center gap-3 text-ink hover:text-pine">
+          <SchoolLogo size={48} />
+          <span>
+            <span className="block text-[12px] font-semibold tracking-[0.1em] text-pine uppercase">
+              Svenska Skolan Mallorca
+            </span>
+            <span className="block text-[16px] font-semibold">Underlaget · Gymnasiet</span>
+          </span>
+        </Link>
         <button
           type="button"
           className="text-[14px] text-stone underline hover:text-ink"

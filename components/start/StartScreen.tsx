@@ -2,14 +2,18 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { SchoolLogo } from "@/components/brand/SchoolLogo";
 
 export function StartScreen() {
   const [showGrundskola, setShowGrundskola] = useState(false);
 
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center px-5 py-16">
-      <div className="w-full max-w-[420px] rounded-[20px] bg-card px-8 py-10 shadow-[0_1px_2px_rgb(31_28_22/0.04),0_12px_32px_rgb(31_28_22/0.06)]">
-        <p className="text-center text-[13px] font-medium tracking-wide text-stone">
+      <div className="w-full max-w-[420px] rounded-[20px] bg-card px-8 py-10 shadow-[0_1px_2px_rgb(44_50_76/0.04),0_12px_32px_rgb(44_50_76/0.08)]">
+        <div className="flex justify-center">
+          <SchoolLogo size={96} priority />
+        </div>
+        <p className="mt-5 text-center text-[13px] font-semibold tracking-[0.12em] text-pine uppercase">
           Svenska Skolan Mallorca
         </p>
         <h1 className="font-serif mt-3 text-center text-[32px] font-semibold leading-[38px] text-ink">
@@ -24,7 +28,7 @@ export function StartScreen() {
             href="/gymnasiet"
             className="block rounded-[16px] border border-line bg-card px-4 py-4 text-left transition-colors hover:border-pine hover:bg-pine-soft"
           >
-            <span className="block text-[17px] font-medium text-ink">Gymnasiet</span>
+            <span className="block text-[17px] font-semibold text-ink">Gymnasiet</span>
             <span className="mt-1 block text-[14px] leading-5 text-stone">
               Hermods Distansgymnasium + skolans handledning
             </span>
@@ -35,7 +39,7 @@ export function StartScreen() {
             onClick={() => setShowGrundskola((open) => !open)}
             className="block rounded-[16px] border border-line bg-card px-4 py-4 text-left transition-colors hover:border-pine/40"
           >
-            <span className="block text-[17px] font-medium text-ink">Grundskola</span>
+            <span className="block text-[17px] font-semibold text-ink">Grundskola</span>
             <span className="mt-1 block text-[14px] leading-5 text-stone">Kommer snart</span>
           </button>
         </div>
@@ -54,8 +58,16 @@ export function StartScreen() {
       </div>
 
       <p className="mt-8 max-w-[420px] text-center text-[13px] leading-5 text-stone/80">
-        Underlaget är ett stöd från Svenska Skolan Mallorca. Skolverket beslutar. Appen är inte
-        Skolverket.
+        Underlaget är ett stöd från{" "}
+        <a
+          href="https://www.svenskaskolanmallorca.com/"
+          className="text-klint underline"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Svenska Skolan Mallorca
+        </a>
+        . Skolverket beslutar. Appen är inte Skolverket.
       </p>
     </main>
   );

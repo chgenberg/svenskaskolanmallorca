@@ -1,29 +1,30 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-paper: #f3efe6;
-  --color-card: #fffdf8;
-  --color-ink: #1f1c16;
-  --color-stone: #5c564c;
-  --color-line: #e4ddd0;
-  --color-pine: #2f5d50;
-  --color-pine-soft: #e4efea;
-  --color-klint: #3d5a80;
+  --color-paper: #ecf0f1;
+  --color-card: #ffffff;
+  --color-ink: #2c324c;
+  --color-stone: #5a6570;
+  --color-line: #d0d7de;
+  --color-pine: #0070bc;
+  --color-pine-soft: #e4f1fa;
+  --color-klint: #005289;
+  --color-gold: #fcb900;
   --color-warn: #8a6a2f;
   --color-warn-bg: #f6efd8;
   --color-stop: #8f3d2c;
   --color-stop-bg: #f8e7e2;
   --color-ok: #3f6b4c;
   --color-ok-bg: #e6f0e8;
-  --font-sans: var(--font-geist-sans);
-  --font-serif: var(--font-source-serif);
+  --font-sans: var(--font-raleway);
+  --font-serif: var(--font-raleway);
 }
 
 html,
 body {
   background: var(--color-paper);
   color: var(--color-ink);
-  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-sans), Raleway, "Open Sans", Helvetica, Arial, sans-serif;
 }
 
 body {
@@ -31,7 +32,8 @@ body {
 }
 
 .font-serif {
-  font-family: var(--font-serif), "Source Serif 4", ui-serif, Georgia, serif;
+  font-family: var(--font-serif), Raleway, sans-serif;
+  letter-spacing: -0.02em;
 }
 
 ::selection {

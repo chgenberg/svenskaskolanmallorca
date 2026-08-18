@@ -1,22 +1,21 @@
 import type { Metadata } from "next";
-import { Geist, Source_Serif_4 } from "next/font/google";
+import { Raleway } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const raleway = Raleway({
+  variable: "--font-raleway",
   subsets: ["latin"],
-});
-
-const sourceSerif = Source_Serif_4({
-  variable: "--font-source-serif",
-  subsets: ["latin"],
-  weight: ["600"],
+  weight: ["300", "400", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
   title: "Underlaget — Svenska Skolan Mallorca",
   description:
     "Hjälp att ta fram underlag för statsbidrag till gymnasiet vid Svenska Skolan Mallorca.",
+  icons: {
+    icon: "/LOGO-SVENSKA-SKOLAN.jpg",
+    apple: "/LOGO-SVENSKA-SKOLAN.jpg",
+  },
 };
 
 export default function RootLayout({
@@ -25,10 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="sv"
-      className={`${geistSans.variable} ${sourceSerif.variable} h-full antialiased`}
-    >
+    <html lang="sv" className={`${raleway.variable} h-full antialiased`}>
       <body className="min-h-full bg-paper font-sans text-ink">{children}</body>
     </html>
   );

@@ -7,13 +7,23 @@ Ni söker inte själva. Skolan och Hermods skickar underlaget till Skolverket. V
 ## Prereq
 
 - Node 20+
-- `OPENAI_API_KEY` i `.env.local` (se `.env.example`)
+- `OPENAI_API_KEY` — aldrig i koden. Lokalt i `.env.local`, i produktion i Railway Variables.
 
-## Starta
+## Railway
+
+1. Öppna tjänsten i Railway.
+2. Gå till **Variables**.
+3. **New Variable**
+   - Name: `OPENAI_API_KEY`
+   - Value: din OpenAI-nyckel (samma som i OpenAI Dashboard)
+4. Spara. Railway gör en ny deploy. Nyckeln syns inte i git.
+
+## Starta lokalt
 
 ```bash
 npm install
 cp .env.example .env.local
+# klistra in OPENAI_API_KEY=... bara i .env.local
 npm run dev
 ```
 

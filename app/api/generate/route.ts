@@ -14,7 +14,7 @@ export async function POST(request: Request) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     return NextResponse.json(
-      { error: "OPENAI_API_KEY saknas. Lägg nyckeln i .env.local." },
+      { error: "OPENAI_API_KEY saknas. Sätt variabeln i Railway eller i .env.local lokalt." },
       { status: 500 },
     );
   }
