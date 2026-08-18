@@ -25,17 +25,18 @@ export function WhyStep() {
     <>
       <StepHeader
         title={heading}
-        help="Det här är fältet Skolverket faktiskt läser. Det får inte vara tomt. Det räcker inte att ni vill bo på Mallorca."
+        help="Skolverket läser det här fältet. De vill se att arbetet är orsaken till att ni är utomlands — inte att ni flyttade och sedan jobbar på distans."
       />
       <Alert tone="info">
-        Texten ska visa att verksamheten är orsaken till vistelsen. Livsstil, klimat, skola och
-        skatt är inte skäl.
+        Skriv som arbetsgivaren skulle gjort det: vad personen gör, och varför just de uppgifterna
+        kräver att hen är på plats. Inte klimat, skatt, skola eller “vi valde Mallorca”. Hellre
+        korta meningar än en lång AI-text.
       </Alert>
 
       <div className="mt-6 space-y-6">
         <Field
           label="Berätta med egna ord, kort"
-          hint="Det här vet bara ni. Tre till sex meningar."
+          hint="Tre till sex meningar. Till exempel: vilka kunder eller uppdrag, vad som görs på plats, varför det inte kan göras från Sverige."
         >
           <TextArea
             value={state.whyRaw}
@@ -56,7 +57,7 @@ export function WhyStep() {
                 disabled={!state.aiConsent || !state.whyRaw.trim() || loading}
                 onClick={() => generate("why")}
               >
-                {loading ? "Skriver förslag…" : "Skriv förslag till blanketten"}
+                {loading ? "Skriver förslag…" : state.whyGenerated ? "Skriv om, mer vardagligt" : "Skriv förslag till blanketten"}
               </Button>
               <Button type="button" variant="ghost" onClick={() => patch({ writeMyself: true })}>
                 Avstå och skriv själv
@@ -128,7 +129,7 @@ export function LetterStep() {
     <>
       <StepHeader
         title="Brev till den som ska skriva under"
-        help="Ett kort, sakligt brev på svenska. Du kopierar och skickar. Inget skickas härifrån."
+        help="Ett vanligt mejl du kan skicka. Kort och sakligt. Inget skickas härifrån."
       />
       <div className="space-y-6">
         <Field label="Mottagare">

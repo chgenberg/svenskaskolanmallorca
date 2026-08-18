@@ -60,8 +60,8 @@ export function canContinue(state: WizardState, stepId: StepId): boolean {
       );
     case "why": {
       const text = whyText(state);
-      if (state.writeMyself) return text.length >= 400;
-      return state.whyApproved && text.length >= 400;
+      if (state.writeMyself) return text.length >= 280;
+      return state.whyApproved && text.length >= 280;
     }
     case "signer":
       if (isSoleTrader(state)) return false;

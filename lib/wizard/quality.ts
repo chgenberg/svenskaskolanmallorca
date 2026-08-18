@@ -1,9 +1,12 @@
 import type { WizardState } from "./types";
 
 const LIFESTYLE =
-  /\b(klimat|solen|soliga|livskvalitet|livsstil|skatt|skatten|valde att flytta|weekend|pension|digital nomad|bättre skola|semester)\b/i;
+  /\b(klimat|solen|soliga|livskvalitet|livsstil|skatt|skatten|valde att flytta|weekend|pension|digital nomad|bättre skola|semester|jobbar på distans från)\b/i;
 
 const FEELING = /\b(jag känner|vi drömde|vi ville|för att det är skönt|för barnens skull)\b/i;
+
+const AI_TELL =
+  /\b(således|därmed|i enlighet med|i syfte att|säkerställa|beaktat|föreligger|innehar|nyckelroll|värdeskapande|strategisk närvaro|det är av vikt|det är viktigt att framhålla|härmed|vidare kan nämnas)\b/i;
 
 export type QualityIssue = {
   code: string;
@@ -14,11 +17,17 @@ export function checkWhyQuality(text: string, state: WizardState): QualityIssue[
   const issues: QualityIssue[] = [];
   const trimmed = text.trim();
 
-  if (trimmed.length < 400) {
-    issues.push({ code: "short", message: "Texten behöver vara minst 400 tecken och visa varför arbetet kräver närvaro utomlands." });
+  if (trimmed.length < 280) {
+    issues.push({
+      code: "short",
+      message: "Skriv vad arbetet består i och varför just de uppgifterna kräver närvaro utomlands. Några korta stycken räcker.",
+    });
   }
-  if (trimmed.length > 2000) {
-    issues.push({ code: "long", message: "Texten är för lång för blankettfältet. Korta ner till högst 2 000 tecken." });
+  if (trimmed.length > 1200) {
+    issues.push({
+      code: "long",
+      message: "Texten är för lång för blankettfältet. Korta ner. Skolverket läser orsak, inte essä.",
+    });
   }
   if (!/(arbete|tjänst|uppdrag|forskning|studier|kultur|verksamhet)/i.test(trimmed)) {
     issues.push({ code: "work", message: "Det saknas en konkret beskrivning av arbetet, studierna eller verksamheten." });
@@ -30,7 +39,19 @@ export function checkWhyQuality(text: string, state: WizardState): QualityIssue[
     issues.push({ code: "lifestyle", message: "Ta bort livsstilsskäl som klimat, skatt eller att ni valde Mallorca." });
   }
   if (FEELING.test(trimmed)) {
-    issues.push({ code: "feeling", message: "Blankettfältet ska vara sakprosa, inte en personlig essä." });
+    issues.push({ code: "feeling", message: "Blankettfältet ska låta som arbetsgivaren, inte som en personlig essä." });
+  }
+  if (AI_TELL.test(trimmed)) {
+    issues.push({
+      code: "ai",
+      message: "Ta bort byråkratfraser som således, i enlighet med eller nyckelroll. Skriv som en människa.",
+    });
+  }
+  if (/\b(jobbar hemifrån|remote|distansarbete från|kan utföras varifrån som helst)\b/i.test(trimmed)) {
+    issues.push({
+      code: "remote",
+      message: "Om arbetet kan göras varifrån som helst förklarar det inte varför personen måste vara utomlands. Beskriv vad som kräver platsen.",
+    });
   }
   if (/på grund av arbetet\b/i.test(trimmed) && trimmed.length < 500) {
     issues.push({ code: "vague", message: "Frasen “på grund av arbetet” räcker inte. Beskriv vilket arbete och varför det kräver närvaro." });

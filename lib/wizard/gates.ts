@@ -109,7 +109,7 @@ export function getPackStatus(state: WizardState): PackStatus {
   if (state.reason === "employment" && !state.whyApproved && !state.writeMyself) return "incomplete";
   if (getStops(state).length > 0) return "incomplete";
   if (getRisks(state).length > 0) return "complete_risk";
-  if (state.reason && state.studentFirstName && whyText(state).length >= 400) return "complete";
+  if (state.reason && state.studentFirstName && whyText(state).length >= 280) return "complete";
   return "incomplete";
 }
 

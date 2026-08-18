@@ -1,0 +1,23 @@
+---
+description: Kör alltid pre-push bug-check innan git push. Blockerar push tills checken är grön.
+alwaysApply: true
+---
+
+# Pre-push bug-check (alltid)
+
+Innan `git push` ska du ALLTID:
+
+1. Köra `npm run prepush` (typcheck, lint, hemlighetssökning).
+2. Låta git-hooken `.husky/pre-push` köra — hoppa aldrig över med `--no-verify`.
+3. Om checken faller: fixa, kör om, pusha först när den är grön.
+
+Pusha inte `.env.local`, `OPENAI_API_KEY`, `sk-` eller `sk-proj-`.
+
+Projektkontrakt att jaga i diffen:
+
+- Födelsedatum/personnummer skickas inte till GPT (`lib/wizard/sanitize.ts`).
+- Appen lovar aldrig att familjen är godkänd.
+- Vårdnadshavaren får inte skriva under del 2 själv. Enskild firma är stopp.
+- Inga Skolverket-PDF:er hostas publikt.
+
+Vid CRITICAL/HIGH: pusha inte. Rapportera och åtgärda först.

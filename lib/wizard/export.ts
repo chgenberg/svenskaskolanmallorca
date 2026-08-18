@@ -60,7 +60,7 @@ export function getChecklist(state: WizardState): { done: boolean; text: string 
     items.push(
       { done: Boolean(state.employerName && state.employerOrgNr), text: "Del 2 — arbetsgivare och organisationsnummer" },
       { done: Boolean(state.category), text: `Kategori ${state.category || "A–F"} ikryssad` },
-      { done: whyText(state).length >= 400, text: "Fältet “Ange varför vårdnadshavaren måste arbeta utomlands” är ifyllt" },
+      { done: whyText(state).length >= 280, text: "Fältet “Ange varför vårdnadshavaren måste arbeta utomlands” är ifyllt" },
       {
         done: state.canIndependentSign !== "self" && Boolean(state.signerName || state.auditorName),
         text: "Del 2 underskrivs av arbetsgivare, HR eller extern revisor — inte av er",
@@ -78,7 +78,7 @@ export function getChecklist(state: WizardState): { done: boolean; text: string 
     items.push(
       { done: Boolean(state.institutionName), text: "Namn på universitet, skola eller forskningscentrum" },
       { done: state.funding !== "" && state.funding !== "none", text: "Intyg om CSN, stipendium eller lön bifogas till skolan" },
-      { done: whyText(state).length >= 400, text: "Beskrivning av varför studierna måste ske utomlands" },
+      { done: whyText(state).length >= 280, text: "Beskrivning av varför studierna måste ske utomlands" },
     );
   }
 
