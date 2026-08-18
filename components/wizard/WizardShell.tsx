@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SchoolLogo } from "@/components/brand/SchoolLogo";
 import { Button } from "@/components/ui";
+import { personaById } from "@/lib/wizard/personas";
 import { getStops } from "@/lib/wizard/gates";
 import { getSteps, stepIndex } from "@/lib/wizard/steps";
 import { useWizardStore } from "@/lib/wizard/store";
@@ -20,9 +22,11 @@ export function WizardShell() {
   const next = useWizardStore((s) => s.next);
   const back = useWizardStore((s) => s.back);
   const reset = useWizardStore((s) => s.reset);
+  const loadPersona = useWizardStore((s) => s.loadPersona);
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
   const state = useWizardStore();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const finish = () => setHydrated(true);
@@ -31,6 +35,12 @@ export function WizardShell() {
     if (useWizardStore.persist.hasHydrated()) finish();
     return unsub;
   }, [setHydrated]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    const persona = personaById(searchParams.get("exempel"));
+    if (persona) loadPersona(persona.state);
+  }, [hydrated, loadPersona, searchParams]);
 
   if (!hydrated) {
     return (

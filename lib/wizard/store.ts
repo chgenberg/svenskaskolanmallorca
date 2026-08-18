@@ -17,6 +17,8 @@ type WizardStore = WizardState & {
   back: () => void;
   reset: () => void;
   resetBranch: () => void;
+  loadPersona: (state: WizardState) => void;
+  toggleAttachment: (id: string, value: boolean) => void;
 };
 
 const BRANCH_RESET: Partial<WizardState> = {
@@ -71,6 +73,7 @@ const BRANCH_RESET: Partial<WizardState> = {
   exceptionalReasons: "",
   exceptionalWho: "",
   exceptionalDocs: "",
+  attachmentChecks: {},
 };
 
 export const useWizardStore = create<WizardStore>()(
@@ -115,13 +118,31 @@ export const useWizardStore = create<WizardStore>()(
       },
       reset: () => set({ ...defaultState(), hydrated: true }),
       resetBranch: () => set({ ...BRANCH_RESET, currentStepId: "reason" }),
+      loadPersona: (state) =>
+        set({ ...state, attachmentChecks: state.attachmentChecks ?? {}, hydrated: true, currentStepId: "pack" }),
+      toggleAttachment: (id, value) =>
+        set({
+          attachmentChecks: { ...(get().attachmentChecks ?? {}), [id]: value },
+        }),
     }),
     {
       name: "underlaget-gymnasiet-v1",
       skipHydration: true,
       partialize: (state) => {
-        const { hydrated, setHydrated, patch, patchGuardian, goTo, next, back, reset, resetBranch, ...rest } =
-          state;
+        const {
+          hydrated,
+          setHydrated,
+          patch,
+          patchGuardian,
+          goTo,
+          next,
+          back,
+          reset,
+          resetBranch,
+          loadPersona,
+          toggleAttachment,
+          ...rest
+        } = state;
         void hydrated;
         void setHydrated;
         void patch;
@@ -131,6 +152,8 @@ export const useWizardStore = create<WizardStore>()(
         void back;
         void reset;
         void resetBranch;
+        void loadPersona;
+        void toggleAttachment;
         return rest;
       },
     },

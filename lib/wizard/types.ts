@@ -125,6 +125,7 @@ export type WizardState = {
   exceptionalReasons: string;
   exceptionalWho: "student" | "guardian" | "both" | "";
   exceptionalDocs: "exists" | "missing" | "";
+  attachmentChecks: Partial<Record<string, boolean>>;
 };
 
 export type StepDef = {

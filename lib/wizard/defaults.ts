@@ -80,6 +80,7 @@ export const defaultState = (): WizardState => ({
   exceptionalReasons: "",
   exceptionalWho: "",
   exceptionalDocs: "",
+  attachmentChecks: {},
 });
 
 export const AUDITOR_CORE_PARAGRAPH =
