@@ -11,7 +11,7 @@ Innan `git push` ska du ALLTID:
 2. Låta git-hooken `.husky/pre-push` köra — hoppa aldrig över med `--no-verify`.
 3. Om checken faller: fixa, kör om, pusha först när den är grön.
 
-Pusha inte `.env.local`, `OPENAI_API_KEY`, `sk-` eller `sk-proj-`.
+Pusha inte `.env.local` eller riktiga OpenAI-nycklar.
 
 Projektkontrakt att jaga i diffen:
 

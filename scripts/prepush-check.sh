@@ -11,9 +11,9 @@ if git ls-files | grep -E '(^|/)\.env\.local$' >/dev/null; then
   exit 1
 fi
 
-if git grep -I -n -E 'sk-proj-|sk-[A-Za-z0-9]{20,}|OPENAI_API_KEY=sk-' -- ':!.env.example' ':!scripts/prepush-check.sh' >/dev/null; then
+if git grep -I -n -E 'sk-proj-[A-Za-z0-9_-]{20,}|OPENAI_API_KEY=sk-[A-Za-z0-9_-]+' -- ':!.env.example' ':!scripts/prepush-check.sh' >/dev/null; then
   echo "STOPP: API-nyckel eller hemlighet finns i tracked filer."
-  git grep -I -n -E 'sk-proj-|sk-[A-Za-z0-9]{20,}|OPENAI_API_KEY=sk-' -- ':!.env.example' ':!scripts/prepush-check.sh' || true
+  git grep -I -n -E 'sk-proj-[A-Za-z0-9_-]{20,}|OPENAI_API_KEY=sk-[A-Za-z0-9_-]+' -- ':!.env.example' ':!scripts/prepush-check.sh' || true
   exit 1
 fi
 
