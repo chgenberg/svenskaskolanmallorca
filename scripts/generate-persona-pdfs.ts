@@ -1,14 +1,18 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
+import type { SchoolTrackId } from "../lib/tracks/config";
 import { buildPdfBuffer } from "../lib/wizard/pdf";
-import { PERSONAS } from "../lib/wizard/personas";
+import { personasFor } from "../lib/wizard/personas";
 
-async function main() {
-  const folder = join(homedir(), "Desktop", "Underlaget-exempel");
+async function writeTrack(track: SchoolTrackId) {
+  const folder =
+    track === "grundskola"
+      ? join(homedir(), "Desktop", "Underlaget-exempel", "grundskola")
+      : join(homedir(), "Desktop", "Underlaget-exempel");
   mkdirSync(folder, { recursive: true });
 
-  for (const [index, persona] of PERSONAS.entries()) {
+  for (const [index, persona] of personasFor(track).entries()) {
     const heading =
       persona.group === "dont"
         ? `Underlaget — gör inte så här: ${persona.title}`
@@ -18,6 +22,17 @@ async function main() {
     writeFileSync(file, buffer);
     console.log(file);
   }
+}
+
+async function main() {
+  const arg = process.argv.find((value) => value.startsWith("--track="));
+  const requested = arg?.slice("--track=".length);
+  if (requested === "grundskola" || requested === "gymnasiet") {
+    await writeTrack(requested);
+    return;
+  }
+  await writeTrack("gymnasiet");
+  await writeTrack("grundskola");
 }
 
 void main();

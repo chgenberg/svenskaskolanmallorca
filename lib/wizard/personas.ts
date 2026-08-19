@@ -1,5 +1,6 @@
+import type { SchoolTrackId } from "@/lib/tracks/config";
 import { defaultState } from "./defaults";
-import type { WizardState } from "./types";
+import type { StudentYear, WizardState } from "./types";
 
 export type PersonaGroup = "common" | "extra" | "dont";
 
@@ -703,7 +704,65 @@ export const PERSONAS: Persona[] = [
   },
 ];
 
-export function personaById(id: string | null | undefined): Persona | undefined {
+const GRUND_YEAR: Record<string, StudentYear> = {
+  "1": "3",
+  "2": "6",
+  "3": "8",
+};
+
+const GRUND_DOB_SHIFT: Record<string, number> = {
+  "1": 6,
+  "2": 5,
+  "3": 4,
+};
+
+function shiftDate(iso: string, years: number): string {
+  if (!iso) return iso;
+  const [year, month, day] = iso.split("-");
+  if (!year || !month || !day) return iso;
+  return `${Number(year) + years}-${month}-${day}`;
+}
+
+function stripHermods(text: string): string {
+  return text
+    .replaceAll(", som samordnar med Hermods", "")
+    .replaceAll(" (Hermods Distansgymnasium)", "")
+    .replaceAll(" / Hermods", "")
+    .replaceAll(" och Hermods", "")
+    .replaceAll("Hermods Distansgymnasium", "Svenska Skolan Mallorca")
+    .replaceAll("Hermods", "skolan");
+}
+
+function toGrundskola(persona: Persona): Persona {
+  const fromYear = persona.state.year;
+  const year = GRUND_YEAR[fromYear] ?? fromYear;
+  const shift = GRUND_DOB_SHIFT[fromYear] ?? 6;
+  return {
+    ...persona,
+    state: {
+      ...persona.state,
+      schoolTrack: "grundskola",
+      year,
+      program: "",
+      programOther: "",
+      studentDateOfBirth: shiftDate(persona.state.studentDateOfBirth, shift),
+      stayPlace: "Spanien, Mallorca",
+      whyRaw: stripHermods(persona.state.whyRaw),
+      whyGenerated: stripHermods(persona.state.whyGenerated),
+      exceptionalReasons: stripHermods(persona.state.exceptionalReasons),
+    },
+  };
+}
+
+export function personasFor(track: SchoolTrackId = "gymnasiet"): Persona[] {
+  if (track === "grundskola") return PERSONAS.map(toGrundskola);
+  return PERSONAS;
+}
+
+export function personaById(
+  id: string | null | undefined,
+  track: SchoolTrackId = "gymnasiet",
+): Persona | undefined {
   if (!id) return undefined;
-  return PERSONAS.find((persona) => persona.id === id);
+  return personasFor(track).find((persona) => persona.id === id);
 }

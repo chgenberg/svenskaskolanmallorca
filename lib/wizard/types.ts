@@ -21,6 +21,21 @@ export type Citizenship = "swedish" | "swedish_plus" | "not_swedish";
 
 export type PackStatus = "complete" | "complete_risk" | "incomplete";
 
+export type SchoolTrackId = "gymnasiet" | "grundskola";
+
+export type StudentYear =
+  | "forskoleklass"
+  | "1"
+  | "2"
+  | "3"
+  | "4"
+  | "5"
+  | "6"
+  | "7"
+  | "8"
+  | "9"
+  | "";
+
 export type StepId =
   | "intro"
   | "student"
@@ -53,13 +68,14 @@ export type Guardian = {
 };
 
 export type WizardState = {
+  schoolTrack: SchoolTrackId;
   currentStepId: StepId;
   understoodSchoolSubmits: boolean;
   consentProcessing: boolean;
   studentFirstName: string;
   studentLastName: string;
   studentDateOfBirth: string;
-  year: "1" | "2" | "3" | "";
+  year: StudentYear;
   program: "ekonomi" | "samhalle" | "annat" | "";
   programOther: string;
   guardian1: Guardian;

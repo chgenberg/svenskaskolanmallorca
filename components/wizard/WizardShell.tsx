@@ -5,18 +5,19 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SchoolLogo } from "@/components/brand/SchoolLogo";
 import { Button } from "@/components/ui";
+import { TRACKS, type SchoolTrackId } from "@/lib/tracks/config";
 import { personaById } from "@/lib/wizard/personas";
 import { getStops } from "@/lib/wizard/gates";
 import { getSteps, stepIndex } from "@/lib/wizard/steps";
-import { useWizardStore } from "@/lib/wizard/store";
+import { useWizardStore, useWizardStoreApi } from "@/lib/wizard/store";
 import type { StepId } from "@/lib/wizard/types";
 import { canContinue } from "@/lib/wizard/validation";
 import { PrivacyPanel } from "./PrivacyPanel";
 import { StepView } from "./StepView";
 
-export function WizardShell() {
+export function WizardShell({ track }: { track: SchoolTrackId }) {
+  const store = useWizardStoreApi();
   const hydrated = useWizardStore((s) => s.hydrated);
-  const setHydrated = useWizardStore((s) => s.setHydrated);
   const currentStepId = useWizardStore((s) => s.currentStepId);
   const goTo = useWizardStore((s) => s.goTo);
   const next = useWizardStore((s) => s.next);
@@ -27,20 +28,21 @@ export function WizardShell() {
   const [confirmReset, setConfirmReset] = useState(false);
   const state = useWizardStore();
   const searchParams = useSearchParams();
+  const config = TRACKS[track];
 
   useEffect(() => {
-    const finish = () => setHydrated(true);
-    const unsub = useWizardStore.persist.onFinishHydration(finish);
-    void useWizardStore.persist.rehydrate();
-    if (useWizardStore.persist.hasHydrated()) finish();
+    const finish = () => store.getState().setHydrated(true);
+    const unsub = store.persist.onFinishHydration(finish);
+    void store.persist.rehydrate();
+    if (store.persist.hasHydrated()) finish();
     return unsub;
-  }, [setHydrated]);
+  }, [store]);
 
   useEffect(() => {
     if (!hydrated) return;
-    const persona = personaById(searchParams.get("exempel"));
+    const persona = personaById(searchParams.get("exempel"), track);
     if (persona) loadPersona(persona.state);
-  }, [hydrated, loadPersona, searchParams]);
+  }, [hydrated, loadPersona, searchParams, track]);
 
   if (!hydrated) {
     return (
@@ -67,7 +69,7 @@ export function WizardShell() {
             <span className="block text-[12px] font-semibold tracking-[0.1em] text-pine uppercase">
               Svenska Skolan Mallorca
             </span>
-            <span className="block text-[16px] font-semibold">Underlaget · Gymnasiet</span>
+            <span className="block text-[16px] font-semibold">Underlaget · {config.label}</span>
           </span>
         </Link>
         <button

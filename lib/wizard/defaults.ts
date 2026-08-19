@@ -1,4 +1,4 @@
-import type { Guardian, WizardState } from "./types";
+import type { Guardian, SchoolTrackId, WizardState } from "./types";
 
 export const emptyGuardian = (): Guardian => ({
   firstName: "",
@@ -7,7 +7,8 @@ export const emptyGuardian = (): Guardian => ({
   citizenship: "",
 });
 
-export const defaultState = (): WizardState => ({
+export const defaultState = (track: SchoolTrackId = "gymnasiet"): WizardState => ({
+  schoolTrack: track,
   currentStepId: "intro",
   understoodSchoolSubmits: false,
   consentProcessing: false,
@@ -85,6 +86,9 @@ export const defaultState = (): WizardState => ({
 
 export const AUDITOR_CORE_PARAGRAPH =
   "Skolverket kräver att del 2 av Intyg om tjänstgöring undertecknas av arbetsgivaren eller annan lämplig person med insyn i verksamheten, till exempel extern revisor. Vårdnadshavaren får inte underteckna sitt eget intyg. Er underskrift intygar att uppgifterna om tjänstgöringen stämmer — inte att statsbidrag ska beviljas. Mottagare av bidraget är skolan/distansinstitutet, inte familjen.";
+
+export const AUDITOR_CORE_PARAGRAPH_EN =
+  "Skolverket requires part 2 of the Employer certificate (Intyg om tjänstgöring) to be signed by the employer or another suitable person with insight into the business, for example an external auditor. The guardian must not sign their own certificate. Your signature confirms that the employment details are correct — not that the grant should be awarded. The recipient of the grant is the school, not the family.";
 
 export const SKOLVERKET_FORMS = {
   guide:

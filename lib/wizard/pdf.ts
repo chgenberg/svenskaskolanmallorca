@@ -1,12 +1,16 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import PDFDocument from "pdfkit";
+import { approvalFeeHint, SCHOOL_FUTURE_SENTENCE, trackOf } from "@/lib/tracks/config";
 import { SKOLVERKET_FORMS } from "./defaults";
 import { attachmentSummary, getAttachments } from "./attachments";
 import {
   employerEmail,
+  employerEmailEn,
   employerMailto,
+  employerMailtoEn,
   fieldGuidePairs,
+  fieldGuidePairsEn,
   fillSteps,
   getChecklist,
   officialFormUrl,
@@ -49,7 +53,8 @@ type Doc = PDFKit.PDFDocument;
 
 export function buildPdfBuffer(state: WizardState, title?: string): Promise<Buffer> {
   return new Promise((resolve, reject) => {
-    const heading = title || "Underlaget — Svenska Skolan Mallorca";
+    const track = trackOf(state);
+    const heading = title || `Underlaget — Svenska Skolan Mallorca, ${track.shortLabel.toLowerCase()}`;
     const doc = new PDFDocument({
       size: "A4",
       margin: 0,
@@ -58,8 +63,8 @@ export function buildPdfBuffer(state: WizardState, title?: string): Promise<Buff
       info: {
         Title: heading,
         Author: "Svenska Skolan Mallorca",
-        Subject: "Underlag till Skolverket, gymnasiet",
-        Keywords: "Skolverket, underlag, gymnasiet, Mallorca",
+        Subject: `Underlag till Skolverket, ${track.shortLabel.toLowerCase()}`,
+        Keywords: `Skolverket, underlag, ${track.id}, Mallorca`,
       },
     });
 
@@ -90,7 +95,7 @@ export function buildPdfBuffer(state: WizardState, title?: string): Promise<Buff
     const range = doc.bufferedPageRange();
     for (let i = 0; i < range.count; i += 1) {
       doc.switchToPage(range.start + i);
-      if (i > 0) drawContinuedHeader(ctx, heading);
+      if (i > 0) drawContinuedHeader(ctx, heading, track.shortLabel);
       drawPageFooter(ctx, i + 1, range.count);
     }
 
@@ -124,7 +129,7 @@ function drawCoverHeader(ctx: Layout, state: WizardState, heading: string) {
     width: 300,
   });
   doc.font(ctx.bold).fontSize(20).text("Underlaget", textX, 44, { width: 300 });
-  doc.font(ctx.regular).fontSize(10).fillColor("#d6eaf8").text("Gymnasiet · 3 § · stöd till vårdnadshavare", textX, 70, {
+  doc.font(ctx.regular).fontSize(10).fillColor("#d6eaf8").text(`${trackOf(state).shortLabel} · 3 § · stöd till vårdnadshavare`, textX, 70, {
     width: 300,
   });
 
@@ -145,7 +150,7 @@ function drawCoverHeader(ctx: Layout, state: WizardState, heading: string) {
   doc.moveDown(0.6);
 }
 
-function drawContinuedHeader(ctx: Layout, heading: string) {
+function drawContinuedHeader(ctx: Layout, heading: string, label: string) {
   const { doc } = ctx;
   doc.save();
   doc.rect(0, 0, PAGE_W, 36).fill(BLUE);
@@ -154,7 +159,7 @@ function drawContinuedHeader(ctx: Layout, heading: string) {
   doc.fillColor(WHITE).font(ctx.bold).fontSize(9).text("Underlaget  ·  Svenska Skolan Mallorca", M, 13, {
     width: CW - 80,
   });
-  doc.fillColor("#d6eaf8").font(ctx.regular).fontSize(8).text("Gymnasiet", PAGE_W - M - 80, 13, {
+  doc.fillColor("#d6eaf8").font(ctx.regular).fontSize(8).text(label, PAGE_W - M - 80, 13, {
     width: 80,
     align: "right",
   });
@@ -195,15 +200,17 @@ function drawOverview(ctx: Layout, state: WizardState, heading: string) {
     doc.fillColor(STOP).font(ctx.bold).fontSize(10).text(text, M + 14, doc.y + 12, { width: CW - 28 });
     doc.y += h + 12;
   } else {
-    rounded(doc, M, doc.y, CW, 44, SOFT);
-    doc.fillColor(KLINT).font(ctx.regular).fontSize(9);
-    doc.text(
-      "Ni söker inte själva. Svenska Skolan Mallorca och Hermods skickar underlaget. Skolverket beslutar. Godkännande kan sänka gymnasieavgiften med 2 200 €.",
-      M + 14,
-      doc.y + 10,
-      { width: CW - 28 },
+    const track = trackOf(state);
+    const overview =
+      `Ni söker inte själva. ${track.submittersShort} skickar underlaget. Skolverket beslutar. ${approvalFeeHint(track)} ${SCHOOL_FUTURE_SENTENCE}`;
+    const overviewH = Math.max(
+      52,
+      doc.font(ctx.regular).fontSize(9).heightOfString(overview, { width: CW - 28 }) + 20,
     );
-    doc.y += 54;
+    rounded(doc, M, doc.y, CW, overviewH, SOFT);
+    doc.fillColor(KLINT).font(ctx.regular).fontSize(9);
+    doc.text(overview, M + 14, doc.y + 10, { width: CW - 28 });
+    doc.y += overviewH + 10;
   }
 
   const summary = attachmentSummary(state);
@@ -330,15 +337,20 @@ function drawWhy(ctx: Layout, state: WizardState) {
   doc.moveDown(0.8);
 }
 
-function drawEmail(ctx: Layout, state: WizardState) {
+function drawEmailDraft(
+  ctx: Layout,
+  email: string,
+  mailto: string,
+  title: string,
+  dest: string,
+) {
   const { doc } = ctx;
-  const email = employerEmail(state);
   const textH = doc.font(ctx.regular).fontSize(9.5).heightOfString(email, { width: CW - 28 });
   ensure(ctx, 90);
-  sectionTitle(ctx, "Mejl till arbetsgivare eller undertecknare", "mejl");
-  ctx.doc.outline.addItem("Mejl");
+  sectionTitle(ctx, title, dest);
+  ctx.doc.outline.addItem(title);
 
-  linkButton(ctx, "Öppna utkast i mejlprogrammet", employerMailto(state), BLUE);
+  linkButton(ctx, "Öppna utkast i mejlprogrammet", mailto, BLUE);
   hint(ctx, "Knappen öppnar ert mejlprogram med ämne och text ifyllda. Kontrollera mottagaren innan ni skickar.");
 
   const boxH = textH + 24;
@@ -347,6 +359,37 @@ function drawEmail(ctx: Layout, state: WizardState) {
   rounded(doc, M, y, CW, boxH, PAPER);
   doc.fillColor(INK).font(ctx.regular).fontSize(9.5).text(email, M + 14, y + 12, { width: CW - 28 });
   doc.y = y + boxH + 12;
+}
+
+function drawEmail(ctx: Layout, state: WizardState) {
+  drawEmailDraft(ctx, employerEmail(state), employerMailto(state), "Mejl till arbetsgivare eller undertecknare", "mejl");
+  if (trackOf(state).englishEmployerPack && state.reason === "employment") {
+    drawFieldGuideEn(ctx, state);
+    drawEmailDraft(ctx, employerEmailEn(state), employerMailtoEn(state), "Email to employer (English)", "mejl-en");
+  }
+}
+
+function drawFieldGuideEn(ctx: Layout, state: WizardState) {
+  const { doc } = ctx;
+  ensure(ctx, 80);
+  sectionTitle(ctx, "Field guide (English)", "falt-en");
+  ctx.doc.outline.addItem("Field guide (English)");
+  hint(ctx, "Copy these values into Skolverket’s Employer certificate. The official English form is not hosted here.");
+
+  const rows = fieldGuidePairsEn(state);
+  rows.forEach((row, i) => {
+    const valueH = doc.font(ctx.regular).fontSize(10).heightOfString(row.value, { width: CW - 168 });
+    const h = Math.max(28, valueH + 14);
+    ensure(ctx, h);
+    const y = doc.y;
+    rounded(doc, M, y, CW, h, i % 2 === 0 ? SOFT : WHITE);
+    doc.fillColor(STONE).font(ctx.regular).fontSize(8).text(row.label.toUpperCase(), M + 10, y + 9, {
+      width: 140,
+    });
+    doc.fillColor(INK).font(ctx.bold).fontSize(10).text(row.value, M + 154, y + 8, { width: CW - 168 });
+    doc.y = y + h;
+  });
+  doc.moveDown(0.6);
 }
 
 function drawChecklist(ctx: Layout, state: WizardState) {

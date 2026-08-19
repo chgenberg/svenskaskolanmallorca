@@ -1,5 +1,6 @@
 "use client";
 
+import { filenameFallback } from "@/lib/tracks/config";
 import type { WizardState } from "./types";
 
 export async function downloadWizardPdf(state: WizardState) {
@@ -14,7 +15,7 @@ export async function downloadWizardPdf(state: WizardState) {
   const blob = await response.blob();
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
-  const name = `underlag-${state.studentLastName || "gymnasiet"}`.toLowerCase();
+  const name = `underlag-${filenameFallback(state)}`;
   link.href = url;
   link.download = `${name}.pdf`;
   link.click();

@@ -1,3 +1,4 @@
+import { trackOf } from "@/lib/tracks/config";
 import type { GenerateType, WizardState } from "./types";
 
 export function payloadForModel(state: WizardState, type: GenerateType) {
@@ -7,8 +8,10 @@ export function payloadForModel(state: WizardState, type: GenerateType) {
     studentFirstName: state.studentFirstName,
     studentLastName: state.studentLastName,
     studentBirthYear: state.studentDateOfBirth.slice(0, 4),
+    schoolTrack: state.schoolTrack,
+    schoolNameOnForm: trackOf(state).schoolNameOnForm,
     year: state.year,
-    program: state.program === "annat" ? state.programOther : state.program,
+    program: state.schoolTrack === "grundskola" ? "" : state.program === "annat" ? state.programOther : state.program,
     abroadGuardian:
       state.abroadGuardian === "1"
         ? `${state.guardian1.firstName} ${state.guardian1.lastName}`.trim()

@@ -2,13 +2,16 @@
 
 import { useState } from "react";
 import { Alert, Button, Checkbox } from "@/components/ui";
+import { filenameFallback, SCHOOL_FUTURE_SENTENCE, trackOf } from "@/lib/tracks/config";
 import { attachmentGaps, attachmentSummary, getAttachments } from "@/lib/wizard/attachments";
 import { downloadWizardPdf } from "@/lib/wizard/downloadPdf";
 import {
   downloadTextFile,
   employerEmail,
+  employerEmailEn,
   exportBundle,
   fieldGuide,
+  fieldGuideEn,
   formFillInstructions,
   getChecklist,
   officialFormUrl,
@@ -112,7 +115,8 @@ export function PackStep() {
   const email = employerEmail(state);
   const guide = fieldGuide(state);
   const instructions = formFillInstructions(state);
-  const filename = `underlag-${state.studentLastName || "gymnasiet"}`.toLowerCase();
+  const filename = `underlag-${filenameFallback(state)}`;
+  const track = trackOf(state);
   const [pdfError, setPdfError] = useState<string | null>(null);
   const [pdfBusy, setPdfBusy] = useState(false);
   const stops = getStops(state);
@@ -160,6 +164,12 @@ export function PackStep() {
         <ExportCard title="Blanketttexten — klistra in i fältet" body={why || "Ingen text ännu."} />
         <ExportCard title="Förslag på mejl till arbetsgivare" body={email} />
         <ExportCard title="Fältguide" body={guide} />
+        {track.englishEmployerPack && state.reason === "employment" ? (
+          <>
+            <ExportCard title="Mejl till arbetsgivare (engelska)" body={employerEmailEn(state)} />
+            <ExportCard title="Fältguide (engelska)" body={fieldGuideEn(state)} />
+          </>
+        ) : null}
       </div>
 
       {pdfError ? (
@@ -204,8 +214,8 @@ export function PackStep() {
       </div>
 
       <p className="mt-6 text-[15px] leading-6 text-stone">
-        Beslut kommer via skolan, ofta först i februari–mars. Underlaget är ett stöd från Svenska
-        Skolan Mallorca. Skolverket beslutar. Appen är inte Skolverket.
+        {SCHOOL_FUTURE_SENTENCE} Beslut kommer via skolan, ofta först i februari–mars. Underlaget är
+        ett stöd från Svenska Skolan Mallorca. Skolverket beslutar. Appen är inte Skolverket.
       </p>
     </>
   );

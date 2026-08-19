@@ -1,6 +1,7 @@
 "use client";
 
 import { Alert, Checkbox, ChoiceCard, Field, TextInput } from "@/components/ui";
+import { feeReductionSentence, SCHOOL_FUTURE_SENTENCE, trackOf } from "@/lib/tracks/config";
 import { hasSwedishCitizen } from "@/lib/wizard/gates";
 import { useWizardStore } from "@/lib/wizard/store";
 import { stayWarning } from "@/lib/wizard/validation";
@@ -8,23 +9,30 @@ import { stayWarning } from "@/lib/wizard/validation";
 export function IntroStep({ onPrivacy }: { onPrivacy: () => void }) {
   const understoodSchoolSubmits = useWizardStore((s) => s.understoodSchoolSubmits);
   const consentProcessing = useWizardStore((s) => s.consentProcessing);
+  const schoolTrack = useWizardStore((s) => s.schoolTrack);
   const patch = useWizardStore((s) => s.patch);
+  const track = trackOf({ schoolTrack });
 
   return (
     <>
       <StepHeader
         title="Så här fungerar statsbidraget"
-        help="Tre saker att veta innan vi börjar."
+        help="Fyra saker att veta innan vi börjar."
       />
       <ol className="space-y-4 text-[16px] leading-7 text-stone">
         <li>
           <strong className="text-ink">Ni söker inte själva.</strong> Skolan samlar underlagen i
-          början av höstterminen. Hermods Distansgymnasium lämnar dem, tillsammans med skolan, till
-          Skolverket.
+          september, i början av höstterminen. {track.hermods
+            ? "Hermods Distansgymnasium lämnar dem, tillsammans med skolan, till Skolverket."
+            : "Svenska Skolan Mallorca skickar dem till Skolverket."}
         </li>
         <li>
-          <strong className="text-ink">Godkännande sänker avgiften.</strong> Gymnasieavgiften går
-          från 9 300 € till 7 100 € (2 200 €). Nya elever faktureras först till full avgift.
+          <strong className="text-ink">Godkännande sänker avgiften.</strong> {feeReductionSentence(track)}{" "}
+          Nya elever faktureras först till full avgift.
+        </li>
+        <li>
+          <strong className="text-ink">Det handlar om skolan, inte bara om er avgift.</strong>{" "}
+          {SCHOOL_FUTURE_SENTENCE}
         </li>
         <li>
           <strong className="text-ink">Skolverket beslutar.</strong> Guiden hjälper er att lämna ett
@@ -36,7 +44,7 @@ export function IntroStep({ onPrivacy }: { onPrivacy: () => void }) {
           checked={understoodSchoolSubmits}
           onChange={(value) => patch({ understoodSchoolSubmits: value })}
         >
-          Jag förstår att underlaget lämnas till skolan och Hermods, inte direkt till Skolverket.
+          Jag förstår att underlaget lämnas till {track.submittersLabel}, inte direkt till Skolverket.
         </Checkbox>
         <Checkbox
           checked={consentProcessing}
@@ -55,6 +63,7 @@ export function IntroStep({ onPrivacy }: { onPrivacy: () => void }) {
 export function StudentStep() {
   const state = useWizardStore();
   const patch = useWizardStore((s) => s.patch);
+  const track = trackOf(state);
 
   return (
     <>
@@ -87,44 +96,52 @@ export function StudentStep() {
           />
         </Field>
         <Field label="Årskurs">
-          <div className="grid grid-cols-3 gap-2">
-            {(["1", "2", "3"] as const).map((year) => (
+          <div className={`grid gap-2 ${track.hasProgram ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-5"}`}>
+            {track.yearOptions.map((option) => (
               <ChoiceCard
-                key={year}
-                title={`Åk ${year}`}
-                selected={state.year === year}
-                onSelect={() => patch({ year })}
+                key={option.value}
+                title={option.label}
+                selected={state.year === option.value}
+                onSelect={() => patch({ year: option.value as typeof state.year })}
               />
             ))}
           </div>
         </Field>
-        <Field label="Program">
-          <div className="grid gap-2">
-            <ChoiceCard
-              title="Ekonomiprogrammet"
-              selected={state.program === "ekonomi"}
-              onSelect={() => patch({ program: "ekonomi" })}
-            />
-            <ChoiceCard
-              title="Samhällsvetenskapsprogrammet"
-              selected={state.program === "samhalle"}
-              onSelect={() => patch({ program: "samhalle" })}
-            />
-            <ChoiceCard
-              title="Annat"
-              selected={state.program === "annat"}
-              onSelect={() => patch({ program: "annat" })}
-            />
-          </div>
-        </Field>
-        {state.program === "annat" ? (
-          <Field label="Vilket program?">
-            <TextInput
-              value={state.programOther}
-              onChange={(e) => patch({ programOther: e.target.value })}
-            />
-          </Field>
-        ) : null}
+        {track.hasProgram ? (
+          <>
+            <Field label="Program">
+              <div className="grid gap-2">
+                <ChoiceCard
+                  title="Ekonomiprogrammet"
+                  selected={state.program === "ekonomi"}
+                  onSelect={() => patch({ program: "ekonomi" })}
+                />
+                <ChoiceCard
+                  title="Samhällsvetenskapsprogrammet"
+                  selected={state.program === "samhalle"}
+                  onSelect={() => patch({ program: "samhalle" })}
+                />
+                <ChoiceCard
+                  title="Annat"
+                  selected={state.program === "annat"}
+                  onSelect={() => patch({ program: "annat" })}
+                />
+              </div>
+            </Field>
+            {state.program === "annat" ? (
+              <Field label="Vilket program?">
+                <TextInput
+                  value={state.programOther}
+                  onChange={(e) => patch({ programOther: e.target.value })}
+                />
+              </Field>
+            ) : null}
+          </>
+        ) : (
+          <p className="text-[14px] leading-6 text-stone">
+            På blanketten: Ange utlandsskolan som <strong className="text-ink">{track.schoolNameOnForm}</strong>.
+          </p>
+        )}
       </div>
     </>
   );
@@ -202,8 +219,9 @@ export function GuardiansStep() {
         </Field>
         {state.livesWithAbroadGuardian === "no" ? (
           <Alert tone="info">
-            Hermods tar emot underlag där eleven medföljer vårdnadshavare. Berätta för skolan hur ni
-            bor, så de kan bedöma.
+            {trackOf(state).hermods
+              ? "Hermods tar emot underlag där eleven medföljer vårdnadshavare. Berätta för skolan hur ni bor, så de kan bedöma."
+              : "Skolan tar oftast emot underlag där eleven medföljer vårdnadshavaren. Berätta för skolan hur ni bor, så de kan bedöma."}
           </Alert>
         ) : null}
       </div>

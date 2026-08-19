@@ -1,3 +1,4 @@
+import { trackOf } from "@/lib/tracks/config";
 import { distanceStudiesBlocked, isSoleTrader, stayTooShort, whyText } from "./gates";
 import type { StepId, WizardState } from "./types";
 
@@ -10,7 +11,8 @@ export function canContinue(state: WizardState, stepId: StepId): boolean {
         state.studentFirstName.trim() &&
           state.studentLastName.trim() &&
           state.studentDateOfBirth &&
-          state.year,
+          state.year &&
+          (!trackOf(state).hasProgram || state.program),
       );
     case "guardians":
       return Boolean(

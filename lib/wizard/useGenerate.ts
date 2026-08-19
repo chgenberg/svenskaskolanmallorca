@@ -2,17 +2,18 @@
 
 import { useState } from "react";
 import { payloadForModel } from "./sanitize";
-import { useWizardStore } from "./store";
+import { useWizardStoreApi } from "./store";
 import type { GenerateType } from "./types";
 
 export function useGenerate() {
+  const store = useWizardStoreApi();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function generate(type: GenerateType) {
     setLoading(true);
     setError(null);
-    const state = useWizardStore.getState();
+    const state = store.getState();
 
     try {
       const response = await fetch("/api/generate", {
@@ -25,9 +26,9 @@ export function useGenerate() {
         throw new Error(data.error || "Kunde inte skapa text just nu.");
       }
       if (type === "why") {
-        useWizardStore.getState().patch({ whyGenerated: data.text, whyApproved: false });
+        store.getState().patch({ whyGenerated: data.text, whyApproved: false });
       } else {
-        useWizardStore.getState().patch({ letterGenerated: data.text, letterApproved: false });
+        store.getState().patch({ letterGenerated: data.text, letterApproved: false });
       }
       return data.text;
     } catch (err) {

@@ -11,7 +11,7 @@ const raleway = Raleway({
 export const metadata: Metadata = {
   title: "Underlaget — Svenska Skolan Mallorca",
   description:
-    "Hjälp att ta fram underlag för statsbidrag till gymnasiet vid Svenska Skolan Mallorca.",
+    "Hjälp att ta fram underlag för statsbidrag vid Svenska Skolan Mallorca.",
   icons: {
     icon: "/LOGO-SVENSKA-SKOLAN.jpg",
     apple: "/LOGO-SVENSKA-SKOLAN.jpg",

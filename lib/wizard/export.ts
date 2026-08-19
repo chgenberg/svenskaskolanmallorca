@@ -1,5 +1,6 @@
+import { leaveToSchoolSentence, SCHOOL_FUTURE_SENTENCE, trackOf, yearLabel } from "@/lib/tracks/config";
 import { attachmentGaps, attachmentSummary, getAttachments } from "./attachments";
-import { AUDITOR_CORE_PARAGRAPH, SKOLVERKET_FORMS } from "./defaults";
+import { AUDITOR_CORE_PARAGRAPH, AUDITOR_CORE_PARAGRAPH_EN, SKOLVERKET_FORMS } from "./defaults";
 import { getPackStatus, getRisks, getStops, statusLabel, whyText } from "./gates";
 import type { WizardState } from "./types";
 
@@ -95,15 +96,23 @@ export function getChecklist(state: WizardState): { done: boolean; text: string 
   return items;
 }
 
+function programLabel(state: WizardState) {
+  if (state.program === "ekonomi") return "Ekonomiprogrammet";
+  if (state.program === "samhalle") return "Samhällsvetenskapsprogrammet";
+  return state.programOther;
+}
+
 export function fieldGuide(state: WizardState): string {
+  const track = trackOf(state);
   const rows = [
     "FÄLTGUIDE — fyll i Skolverkets PDF med dessa uppgifter",
     "",
     line("Blankett", reasonLabel(state)),
     line("Elevens namn", `${state.studentFirstName} ${state.studentLastName}`.trim()),
     line("Födelsedatum", state.studentDateOfBirth),
-    line("Årskurs", state.year ? `Gymnasiet åk ${state.year}` : ""),
-    line("Program", state.program === "annat" ? state.programOther : state.program),
+    line("Årskurs", yearLabel(state)),
+    ...(track.hasProgram ? [line("Program", programLabel(state))] : []),
+    line("Utlandsskola", track.schoolNameOnForm),
     "",
     line("Vårdnadshavare 1", guardianName(state, 1)),
     line("Födelsedatum VH1", state.guardian1.dateOfBirth),
@@ -185,12 +194,14 @@ export function fieldGuide(state: WizardState): string {
 }
 
 export function fieldGuidePairs(state: WizardState): { label: string; value: string }[] {
+  const track = trackOf(state);
   const pairs: { label: string; value: string }[] = [
     { label: "Blankett", value: reasonLabel(state) },
     { label: "Elevens namn", value: `${state.studentFirstName} ${state.studentLastName}`.trim() },
     { label: "Födelsedatum", value: state.studentDateOfBirth },
-    { label: "Årskurs", value: state.year ? `Gymnasiet åk ${state.year}` : "" },
-    { label: "Program", value: state.program === "ekonomi" ? "Ekonomiprogrammet" : state.program === "samhalle" ? "Samhällsvetenskapsprogrammet" : state.programOther },
+    { label: "Årskurs", value: yearLabel(state) },
+    ...(track.hasProgram ? [{ label: "Program", value: programLabel(state) }] : []),
+    { label: "Utlandsskola", value: track.schoolNameOnForm },
     { label: "Vårdnadshavare 1", value: guardianName(state, 1) },
     { label: "Födelsedatum VH1", value: state.guardian1.dateOfBirth },
     { label: "Medborgarskap VH1", value: citizenshipLabel(state.guardian1.citizenship) },
@@ -318,7 +329,7 @@ export function formFillInstructions(state: WizardState): string {
       ``,
       `4. I fältet “Ange varför vårdnadshavaren måste arbeta utomlands” klistrar ni in blanketttexten från Underlaget.`,
       ``,
-      `5. Skriv ut eller spara som PDF. Få del 2 underskriven. Lämna till Svenska Skolan Mallorca i början av höstterminen.`,
+      `5. Skriv ut eller spara som PDF. Få del 2 underskriven. ${leaveToSchoolSentence(trackOf(state))}`,
     );
   } else if (state.reason === "studies") {
     lines.push(
@@ -343,13 +354,14 @@ export function formFillInstructions(state: WizardState): string {
 }
 
 export function employerEmail(state: WizardState): string {
+  const track = trackOf(state);
   if (state.reason === "studies") {
     return [
       `Ämne: Underlag till Skolverket — studier och forskning, ${state.studentFirstName} ${state.studentLastName}`.trim(),
       ``,
       `Hej,`,
       ``,
-      `Vi tar fram underlag till Svenska Skolan Mallorca / Hermods för statsbidrag. Vårdnadshavaren studerar på plats och vi behöver bifoga intyg om studiemedel, stipendium eller lön.`,
+      `Vi tar fram underlag till ${track.submittersShort} för statsbidrag. Vårdnadshavaren studerar på plats och vi behöver bifoga intyg om studiemedel, stipendium eller lön.`,
       ``,
       `Lärosäte: ${state.institutionName || "[lärosäte]"}`,
       `Period: ${state.fundingPeriod || state.stayFrom || "[period]"}`,
@@ -366,15 +378,21 @@ export function employerEmail(state: WizardState): string {
       ? state.signerName || "HR / arbetsgivare"
       : state.auditorName || "revisor";
   const worker = state.abroadGuardian === "2" ? guardianName(state, 2) : guardianName(state, 1);
+  const schoolLine = track.hermods
+    ? "Jag behöver din hjälp med Skolverkets Intyg om tjänstgöring för vårt barn som går gymnasiet vid Svenska Skolan Mallorca (Hermods Distansgymnasium)."
+    : "Jag behöver din hjälp med Skolverkets Intyg om tjänstgöring för vårt barn som går grundskolan vid Svenska Skolan Mallorca.";
+  const sendLine = track.hermods
+    ? "Skolan och Hermods skickar underlaget. Vi söker inte själva. Jag ber dig fylla i och skriva under del 2 — inte skriva ett fritt brev i stället."
+    : "Skolan skickar underlaget. Vi söker inte själva. Jag ber dig fylla i och skriva under del 2 — inte skriva ett fritt brev i stället.";
 
   return [
     `Ämne: Underskrift av Intyg om tjänstgöring — ${`${state.studentFirstName} ${state.studentLastName}`.trim()}`,
     ``,
     `Hej ${to},`,
     ``,
-    `Jag behöver din hjälp med Skolverkets Intyg om tjänstgöring för vårt barn som går gymnasiet vid Svenska Skolan Mallorca (Hermods Distansgymnasium).`,
+    schoolLine,
     ``,
-    `Skolan och Hermods skickar underlaget. Vi söker inte själva. Jag ber dig fylla i och skriva under del 2 — inte skriva ett fritt brev i stället.`,
+    sendLine,
     ``,
     `Uppgifter att stämma av:`,
     `• Arbetstagare: ${worker || "[namn]"}, ${state.jobTitle || "[befattning]"}`,
@@ -392,6 +410,95 @@ export function employerEmail(state: WizardState): string {
     `Tack,`,
     `${guardianName(state, 1) || ""}`.trim(),
   ].join("\n");
+}
+
+export function employerEmailEn(state: WizardState): string {
+  const to =
+    state.canIndependentSign === "yes"
+      ? state.signerName || "HR / employer"
+      : state.auditorName || "auditor";
+  const worker = state.abroadGuardian === "2" ? guardianName(state, 2) : guardianName(state, 1);
+
+  return [
+    `Subject: Signature of Employer certificate — ${`${state.studentFirstName} ${state.studentLastName}`.trim()}`,
+    ``,
+    `Hi ${to},`,
+    ``,
+    `I need your help with Skolverket’s Employer certificate (Intyg om tjänstgöring) for our child at Svenska Skolan Mallorca.`,
+    ``,
+    `The school submits the application. We do not apply ourselves. Please complete and sign part 2 — do not write a free-form letter instead.`,
+    ``,
+    `Details to confirm:`,
+    `• Employee: ${worker || "[name]"}, ${state.jobTitle || "[title]"}`,
+    `• Employer: ${state.employerName || "[company]"}`,
+    `• Organisation number: ${state.employerOrgNr || "[org. no.]"}`,
+    `• Category: ${categoryLabel(state.category) || "[A–F]"}`,
+    `• Period abroad: ${state.workAbroadFrom || "[from]"} – ${state.workAbroadTo || "indefinite"}`,
+    ``,
+    `In the field “State why the guardian must work abroad” you may use the text we have prepared (attached).`,
+    ``,
+    AUDITOR_CORE_PARAGRAPH_EN,
+    ``,
+    `Could you return a signed PDF?`,
+    ``,
+    `Thank you,`,
+    `${guardianName(state, 1) || ""}`.trim(),
+  ].join("\n");
+}
+
+export function fieldGuideEn(state: WizardState): string {
+  return [
+    "FIELD GUIDE — fill Skolverket’s Employer certificate with these details",
+    "",
+    ...fieldGuidePairsEn(state).map((row) => line(row.label, row.value)),
+  ].join("\n");
+}
+
+export function fieldGuidePairsEn(state: WizardState): { label: string; value: string }[] {
+  const track = trackOf(state);
+  const pairs: { label: string; value: string }[] = [
+    { label: "Form", value: "Employer certificate (Intyg om tjänstgöring)" },
+    { label: "Student", value: `${state.studentFirstName} ${state.studentLastName}`.trim() },
+    { label: "Date of birth", value: state.studentDateOfBirth },
+    { label: "Year", value: yearLabel(state) },
+    { label: "School abroad", value: track.schoolNameOnForm },
+    { label: "Guardian 1", value: guardianName(state, 1) },
+    { label: "Date of birth G1", value: state.guardian1.dateOfBirth },
+    { label: "Swedish citizen G1", value: citizenshipLabel(state.guardian1.citizenship) },
+  ];
+  if (state.hasSecondGuardian) {
+    pairs.push(
+      { label: "Guardian 2", value: guardianName(state, 2) },
+      { label: "Date of birth G2", value: state.guardian2.dateOfBirth },
+      { label: "Swedish citizen G2", value: citizenshipLabel(state.guardian2.citizenship) },
+    );
+  }
+  pairs.push(
+    { label: "Stay abroad from", value: state.stayFrom },
+    { label: "Until", value: state.stayType === "indefinite" ? "Indefinite" : state.stayTo },
+    { label: "Place", value: state.stayPlace },
+    { label: "Employee", value: state.abroadGuardian === "2" ? guardianName(state, 2) : guardianName(state, 1) },
+    { label: "Position", value: state.jobTitle },
+    { label: "Employer", value: state.employerName },
+    { label: "Organisation number", value: state.employerOrgNr },
+    { label: "Address", value: `${state.employerAddress}, ${state.employerCountry}`.trim() },
+    { label: "Category", value: categoryLabel(state.category) },
+    { label: "Employment", value: state.employmentType === "permanent" ? "Permanent" : state.employmentType === "temporary" ? "Fixed-term" : "" },
+    { label: "Period abroad", value: `${state.workAbroadFrom} – ${state.workAbroadTo || "indefinite"}` },
+    {
+      label: "Part 2 signature",
+      value: state.canIndependentSign === "yes" ? `${state.signerName}, ${state.signerTitle}` : `External auditor: ${state.auditorName || "—"}`,
+    },
+  );
+  if (state.category === "D") {
+    pairs.push(
+      { label: "Swedish company", value: state.swedishControllerName },
+      { label: "Swedish org. no.", value: state.swedishControllerOrgNr },
+      { label: "Ownership", value: state.ownershipPercent ? `${state.ownershipPercent} %` : "" },
+      { label: "Influence", value: state.influenceDescription },
+    );
+  }
+  return pairs.filter((row) => row.value);
 }
 
 export function letterText(state: WizardState): string {
@@ -442,7 +549,7 @@ export function fillSteps(state: WizardState): { title: string; body: string }[]
       },
       {
         title: "Lämna till skolan",
-        body: "Skriv ut eller spara som PDF. Få del 2 underskriven. Lämna till Svenska Skolan Mallorca i början av höstterminen. Skolan och Hermods skickar samlat — ni söker inte själva.",
+        body: `Skriv ut eller spara som PDF. Få del 2 underskriven. ${leaveToSchoolSentence(trackOf(state))}`,
       },
     );
   } else if (state.reason === "studies") {
@@ -457,7 +564,7 @@ export function fillSteps(state: WizardState): { title: string; body: string }[]
       },
       {
         title: "Lämna till skolan",
-        body: "Lämna till Svenska Skolan Mallorca. Skolan och Hermods skickar samlat — ni söker inte själva.",
+        body: leaveToSchoolSentence(trackOf(state)),
       },
     );
   } else {
@@ -476,12 +583,19 @@ export function fillSteps(state: WizardState): { title: string; body: string }[]
   return steps;
 }
 
-export function employerMailto(state: WizardState): string {
-  const email = employerEmail(state);
+function mailtoFromDraft(email: string) {
   const lines = email.split("\n");
-  const subject = lines[0]?.replace(/^Ämne:\s*/u, "") ?? "";
+  const subject = lines[0]?.replace(/^(Ämne|Subject):\s*/u, "") ?? "";
   const body = lines.slice(2).join("\n");
   return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+export function employerMailto(state: WizardState): string {
+  return mailtoFromDraft(employerEmail(state));
+}
+
+export function employerMailtoEn(state: WizardState): string {
+  return mailtoFromDraft(employerEmailEn(state));
 }
 
 export function officialFormUrl(state: WizardState): string {
@@ -493,6 +607,7 @@ export function officialFormUrl(state: WizardState): string {
 }
 
 export function exportBundle(state: WizardState): string {
+  const track = trackOf(state);
   const status = statusLabel(getPackStatus(state));
   const risks = getRisks(state);
   const stops = getStops(state);
@@ -504,9 +619,20 @@ export function exportBundle(state: WizardState): string {
     .join("\n");
   const gaps = attachmentGaps(state);
   const summary = attachmentSummary(state);
+  const english =
+    track.englishEmployerPack && state.reason === "employment"
+      ? [
+          "",
+          "ENGLISH EMPLOYER PACK",
+          fieldGuideEn(state),
+          "",
+          "EMAIL TO EMPLOYER / SIGNATORY",
+          employerEmailEn(state),
+        ]
+      : [];
 
   return [
-    "UNDERLAGET — Svenska Skolan Mallorca, gymnasiet",
+    `UNDERLAGET — Svenska Skolan Mallorca, ${track.shortLabel.toLowerCase()}`,
     `Status: ${status}`,
     stops.length ? `Stopp:\n${stops.map((stop) => `- ${stop}`).join("\n")}` : "",
     risks.length ? `Risker:\n${risks.map((risk) => `- ${risk}`).join("\n")}` : "",
@@ -523,6 +649,7 @@ export function exportBundle(state: WizardState): string {
     "",
     "MEJL TILL ARBETSGIVARE / UNDERTECKNARE",
     employerEmail(state),
+    ...english,
     "",
     "CHECKLISTA — ifyllt i Underlaget",
     checklist,
@@ -532,8 +659,9 @@ export function exportBundle(state: WizardState): string {
     "Nästa steg:",
     "1. Ladda ner Skolverkets PDF via länken i guiden.",
     "2. Fyll i med fältguiden. Få del 2 underskriven.",
-    "3. Lämna till Svenska Skolan Mallorca. Skolan och Hermods skickar samlat.",
+    `3. ${leaveToSchoolSentence(track)}`,
     "",
+    SCHOOL_FUTURE_SENTENCE,
     "Underlaget är ett stöd från Svenska Skolan Mallorca. Skolverket beslutar. Appen är inte Skolverket.",
   ]
     .filter((block) => block !== "")

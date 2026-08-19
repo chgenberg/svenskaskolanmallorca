@@ -1,3 +1,4 @@
+import { trackOf } from "@/lib/tracks/config";
 import { getStops, mustUseExternalAuditor } from "./gates";
 import type { WizardState } from "./types";
 
@@ -113,7 +114,9 @@ export function getAttachments(state: WizardState): Attachment[] {
   items.push({
     id: "handed_to_school",
     label: "Paketet är lämnat till Svenska Skolan Mallorca",
-    hint: "Skolan samordnar med Hermods. Ni skickar inte själva till Skolverket.",
+    hint: trackOf(state).hermods
+      ? "Skolan samordnar med Hermods. Ni skickar inte själva till Skolverket."
+      : "Skolan skickar underlaget. Ni skickar inte själva till Skolverket.",
     checked: isChecked(state, "handed_to_school"),
   });
 

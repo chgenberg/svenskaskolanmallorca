@@ -1,3 +1,4 @@
+import { trackOf } from "@/lib/tracks/config";
 import type { PackStatus, WizardState } from "./types";
 
 function monthsBetween(from: string, to?: string): number | null {
@@ -59,7 +60,11 @@ export function getRisks(state: WizardState): string[] {
     risks.push("Minst en vårdnadshavare måste vara svensk medborgare.");
   }
   if (state.livesWithAbroadGuardian === "no") {
-    risks.push("Hermods tar oftast emot underlag där eleven medföljer vårdnadshavaren.");
+    risks.push(
+      trackOf(state).hermods
+        ? "Hermods tar oftast emot underlag där eleven medföljer vårdnadshavaren."
+        : "Skolan tar oftast emot underlag där eleven medföljer vårdnadshavaren.",
+    );
   }
   if (state.dailyLanguage === "rarely" || state.studentSwedish === "insufficient") {
     risks.push("Svenskan i vardagen eller i undervisningen kan behöva bedömas av skolan.");
