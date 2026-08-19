@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { Alert, Button, Checkbox, ChoiceCard, Field, TextArea } from "@/components/ui";
 import { AUDITOR_CORE_PARAGRAPH } from "@/lib/wizard/defaults";
-import { letterText } from "@/lib/wizard/export";
+import { employerEmail, letterText } from "@/lib/wizard/export";
 import { checkWhyQuality } from "@/lib/wizard/quality";
 import { useWizardStore } from "@/lib/wizard/store";
 import { useGenerate } from "@/lib/wizard/useGenerate";
@@ -124,6 +124,7 @@ export function LetterStep() {
   const patch = useWizardStore((s) => s.patch);
   const { generate, loading, error } = useGenerate();
   const preview = letterText(state);
+  const draft = state.letterGenerated || employerEmail(state);
 
   return (
     <>
@@ -170,7 +171,7 @@ export function LetterStep() {
           <>
             <Field label="Brev">
               <TextArea
-                value={state.letterGenerated}
+                value={draft}
                 onChange={(e) => patch({ letterGenerated: e.target.value, letterApproved: false })}
                 className="min-h-[280px]"
               />

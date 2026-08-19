@@ -1,4 +1,5 @@
 import { trackOf } from "@/lib/tracks/config";
+import { letterText } from "./export";
 import { distanceStudiesBlocked, isSoleTrader, stayTooShort, whyText } from "./gates";
 import type { StepId, WizardState } from "./types";
 
@@ -74,7 +75,7 @@ export function canContinue(state: WizardState, stepId: StepId): boolean {
       }
       return Boolean(state.auditorName.trim() || state.signerName.trim());
     case "letter":
-      return Boolean(state.letterApproved && state.letterGenerated.trim());
+      return Boolean(state.letterApproved && letterText(state).trim());
     case "swedish":
       return Boolean(state.dailyLanguage && state.studentSwedish);
     case "studies":
