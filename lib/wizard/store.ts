@@ -146,6 +146,10 @@ export function createWizardStore(trackId: SchoolTrackId): WizardHook {
       {
         name: track.persistKey,
         skipHydration: true,
+        merge: (persisted, current) => ({
+          ...current,
+          ...(typeof persisted === "object" && persisted ? persisted : {}),
+        }),
         partialize: (state) => {
           const {
             hydrated,

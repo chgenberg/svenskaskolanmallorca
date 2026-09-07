@@ -1,7 +1,16 @@
-import { leaveToSchoolSentence, SCHOOL_FUTURE_SENTENCE, trackOf, yearLabel } from "@/lib/tracks/config";
+import { leaveToSchoolSentence, SCHOOL_FUTURE_SENTENCE, trackOf } from "@/lib/tracks/config";
 import { attachmentGaps, attachmentSummary, getAttachments } from "./attachments";
 import { AUDITOR_CORE_PARAGRAPH, AUDITOR_CORE_PARAGRAPH_EN, SKOLVERKET_FORMS } from "./defaults";
-import { getPackStatus, getRisks, getStops, statusLabel, whyText } from "./gates";
+import {
+  CENSUS_LABEL_ES,
+  CENSUS_LABEL_SV,
+  getPackStatus,
+  getRisks,
+  getStops,
+  statusLabel,
+  stayPlaceLabel,
+  whyText,
+} from "./gates";
 import type { WizardState } from "./types";
 
 function line(label: string, value: string) {
@@ -96,12 +105,6 @@ export function getChecklist(state: WizardState): { done: boolean; text: string 
   return items;
 }
 
-function programLabel(state: WizardState) {
-  if (state.program === "ekonomi") return "Ekonomiprogrammet";
-  if (state.program === "samhalle") return "Samhällsvetenskapsprogrammet";
-  return state.programOther;
-}
-
 export function fieldGuide(state: WizardState): string {
   const track = trackOf(state);
   const rows = [
@@ -110,8 +113,6 @@ export function fieldGuide(state: WizardState): string {
     line("Blankett", reasonLabel(state)),
     line("Elevens namn", `${state.studentFirstName} ${state.studentLastName}`.trim()),
     line("Födelsedatum", state.studentDateOfBirth),
-    line("Årskurs", yearLabel(state)),
-    ...(track.hasProgram ? [line("Program", programLabel(state))] : []),
     line("Utlandsskola", track.schoolNameOnForm),
     "",
     line("Vårdnadshavare 1", guardianName(state, 1)),
@@ -127,7 +128,12 @@ export function fieldGuide(state: WizardState): string {
     );
   }
 
-  rows.push("", line("Utlandsvistelse från", state.stayFrom), line("Till", state.stayType === "indefinite" ? "Tillsvidare" : state.stayTo), line("Plats", state.stayPlace));
+  rows.push(
+    "",
+    line("Utlandsvistelse från", state.stayFrom),
+    line("Plats", stayPlaceLabel()),
+    line("Mätpunkt", CENSUS_LABEL_SV),
+  );
 
   if (state.reason === "employment") {
     rows.push(
@@ -199,8 +205,6 @@ export function fieldGuidePairs(state: WizardState): { label: string; value: str
     { label: "Blankett", value: reasonLabel(state) },
     { label: "Elevens namn", value: `${state.studentFirstName} ${state.studentLastName}`.trim() },
     { label: "Födelsedatum", value: state.studentDateOfBirth },
-    { label: "Årskurs", value: yearLabel(state) },
-    ...(track.hasProgram ? [{ label: "Program", value: programLabel(state) }] : []),
     { label: "Utlandsskola", value: track.schoolNameOnForm },
     { label: "Vårdnadshavare 1", value: guardianName(state, 1) },
     { label: "Födelsedatum VH1", value: state.guardian1.dateOfBirth },
@@ -215,8 +219,8 @@ export function fieldGuidePairs(state: WizardState): { label: string; value: str
   }
   pairs.push(
     { label: "Utlandsvistelse från", value: state.stayFrom },
-    { label: "Till", value: state.stayType === "indefinite" ? "Tillsvidare" : state.stayTo },
-    { label: "Plats", value: state.stayPlace },
+    { label: "Plats", value: stayPlaceLabel() },
+    { label: "Mätpunkt", value: CENSUS_LABEL_SV },
   );
   if (state.reason === "employment") {
     pairs.push(
@@ -460,7 +464,6 @@ export function fieldGuidePairsEn(state: WizardState): { label: string; value: s
     { label: "Form", value: "Employer certificate (Intyg om tjänstgöring)" },
     { label: "Student", value: `${state.studentFirstName} ${state.studentLastName}`.trim() },
     { label: "Date of birth", value: state.studentDateOfBirth },
-    { label: "Year", value: yearLabel(state) },
     { label: "School abroad", value: track.schoolNameOnForm },
     { label: "Guardian 1", value: guardianName(state, 1) },
     { label: "Date of birth G1", value: state.guardian1.dateOfBirth },
@@ -475,8 +478,8 @@ export function fieldGuidePairsEn(state: WizardState): { label: string; value: s
   }
   pairs.push(
     { label: "Stay abroad from", value: state.stayFrom },
-    { label: "Until", value: state.stayType === "indefinite" ? "Indefinite" : state.stayTo },
-    { label: "Place", value: state.stayPlace },
+    { label: "Place", value: stayPlaceLabel() },
+    { label: "Census date", value: CENSUS_LABEL_ES },
     { label: "Employee", value: state.abroadGuardian === "2" ? guardianName(state, 2) : guardianName(state, 1) },
     { label: "Position", value: state.jobTitle },
     { label: "Employer", value: state.employerName },

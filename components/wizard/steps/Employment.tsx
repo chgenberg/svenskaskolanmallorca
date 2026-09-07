@@ -1,10 +1,11 @@
 "use client";
 
 import { Alert, ChoiceCard, Field, TextArea, TextInput } from "@/components/ui";
-import { isSoleTrader } from "@/lib/wizard/gates";
+import { CENSUS_LABEL_SV, isSoleTrader } from "@/lib/wizard/gates";
 import { suggestedCategory } from "@/lib/wizard/steps";
 import { useWizardStore } from "@/lib/wizard/store";
 import type { Category } from "@/lib/wizard/types";
+import { stayWarning } from "@/lib/wizard/validation";
 import { StepHeader } from "./Stem";
 
 export function EmployerFormStep() {
@@ -215,12 +216,13 @@ export function EmployerStep() {
 export function JobStep() {
   const state = useWizardStore();
   const patch = useWizardStore((s) => s.patch);
+  const warning = stayWarning(state);
 
   return (
     <>
       <StepHeader
         title="Tjänstgöringen"
-        help="Skilj på anställningen hos arbetsgivaren och själva utlandsperioden."
+        help="Utlandsperioden ska vara minst 6 månader och täcka 15 oktober. Skilj på anställningen hos arbetsgivaren och själva utlandsperioden."
       />
       <div className="space-y-6">
         <Field label="Anställningen hos arbetsgivaren är">
@@ -240,7 +242,10 @@ export function JobStep() {
         {state.category === "F" && state.employmentType === "permanent" ? (
           <Alert tone="warn">F kräver start- och slutdatum i avtalet. Tillsvidare passar inte här.</Alert>
         ) : null}
-        <Field label="Utlandsperiod från">
+        <Field
+          label="Utlandsperiod från"
+          hint={`Minst 6 månader, och perioden ska täcka ${CENSUS_LABEL_SV}.`}
+        >
           <TextInput
             type="month"
             value={state.workAbroadFrom}
@@ -248,7 +253,10 @@ export function JobStep() {
           />
         </Field>
         {state.employmentType === "temporary" || state.category === "F" ? (
-          <Field label="Utlandsperiod till">
+          <Field
+            label="Utlandsperiod till"
+            hint={`Behöver vara ${CENSUS_LABEL_SV} eller senare innevarande läsår.`}
+          >
             <TextInput
               type="month"
               value={state.workAbroadTo}
@@ -256,6 +264,7 @@ export function JobStep() {
             />
           </Field>
         ) : null}
+        {warning ? <Alert tone="warn">{warning}</Alert> : null}
         <Field
           label="Korta arbetsuppgifter — tre konkreta punkter"
           hint="Inte “jobbar med försäljning”. Det här är råvara till blanketttexten."

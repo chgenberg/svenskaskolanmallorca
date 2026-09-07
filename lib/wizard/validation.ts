@@ -1,6 +1,13 @@
-import { trackOf } from "@/lib/tracks/config";
 import { letterText } from "./export";
-import { distanceStudiesBlocked, isSoleTrader, stayTooShort, whyText } from "./gates";
+import {
+  CENSUS_LABEL_SV,
+  distanceStudiesBlocked,
+  isAllowedStayPlace,
+  isSoleTrader,
+  missesCensusDate,
+  stayTooShort,
+  whyText,
+} from "./gates";
 import type { StepId, WizardState } from "./types";
 
 export function canContinue(state: WizardState, stepId: StepId): boolean {
@@ -9,11 +16,7 @@ export function canContinue(state: WizardState, stepId: StepId): boolean {
       return state.understoodSchoolSubmits && state.consentProcessing;
     case "student":
       return Boolean(
-        state.studentFirstName.trim() &&
-          state.studentLastName.trim() &&
-          state.studentDateOfBirth &&
-          state.year &&
-          (!trackOf(state).hasProgram || state.program),
+        state.studentFirstName.trim() && state.studentLastName.trim() && state.studentDateOfBirth,
       );
     case "guardians":
       return Boolean(
@@ -22,7 +25,6 @@ export function canContinue(state: WizardState, stepId: StepId): boolean {
           state.guardian1.dateOfBirth &&
           state.guardian1.citizenship &&
           state.abroadGuardian &&
-          state.livesWithAbroadGuardian &&
           (!state.hasSecondGuardian ||
             (state.guardian2.firstName.trim() &&
               state.guardian2.lastName.trim() &&
@@ -30,7 +32,7 @@ export function canContinue(state: WizardState, stepId: StepId): boolean {
               state.guardian2.citizenship)),
       );
     case "stay":
-      return Boolean(state.stayFrom && state.stayType && (state.stayType === "indefinite" || state.stayTo));
+      return Boolean(state.stayFrom && isAllowedStayPlace(state.stayPlace) && state.activityMeetsStayRule);
     case "reason":
       return Boolean(state.reason);
     case "employer-form":
@@ -106,8 +108,11 @@ export function canContinue(state: WizardState, stepId: StepId): boolean {
 }
 
 export function stayWarning(state: WizardState): string | null {
+  if (missesCensusDate(state)) {
+    return `Anställningen eller verksamheten behöver täcka ${CENSUS_LABEL_SV} innevarande läsår. Ni kan fortsätta, men paketet märks som risk.`;
+  }
   if (!stayTooShort(state)) return null;
   return state.reason === "studies"
     ? "Skolverket brukar kräva minst en hel termin. Ni kan fortsätta, men paketet märks som risk."
-    : "Skolverket brukar kräva minst 6 månader. Kortare vistelse leder ofta till att eleven inte räknas som underlag. Ni kan fortsätta, men paketet märks som risk.";
+    : "Skolverket brukar kräva minst 6 månader. Kortare period leder ofta till att eleven inte räknas som underlag. Ni kan fortsätta, men paketet märks som risk.";
 }

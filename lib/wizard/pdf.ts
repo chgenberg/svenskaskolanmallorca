@@ -16,7 +16,7 @@ import {
   officialFormUrl,
   reasonLabel,
 } from "./export";
-import { getPackStatus, getRisks, getStops, statusLabel, whyText } from "./gates";
+import { getPackStatus, getRisks, getStops, statusLabel, stayPlaceLabel, whyText } from "./gates";
 import type { PackStatus, WizardState } from "./types";
 
 const PAGE_W = 595.28;
@@ -173,7 +173,7 @@ function drawOverview(ctx: Layout, state: WizardState, heading: string) {
   const facts = [
     { label: "Elev", value: student },
     { label: "Blankett", value: form },
-    { label: "Plats", value: state.stayPlace || "—" },
+    { label: "Plats", value: stayPlaceLabel() },
   ];
 
   ensure(ctx, 92);

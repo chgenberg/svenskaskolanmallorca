@@ -41,8 +41,9 @@ function base(partial: Partial<WizardState>): WizardState {
     aiConsent: true,
     writeMyself: false,
     currentStepId: "pack",
-    stayPlace: "Spanien, Mallorca",
+    stayPlace: "Mallorca",
     livesWithAbroadGuardian: "yes",
+    activityMeetsStayRule: "yes",
     hasSecondGuardian: true,
     ...partial,
   };
@@ -187,7 +188,7 @@ export const PERSONAS: Persona[] = [
       abroadGuardian: "1",
       stayFrom: "2023-09",
       stayType: "limited",
-      stayTo: "2026-08",
+      stayTo: "2027-08",
       reason: "employment",
       employerForm: "swedish_authority",
       isOwnerOrCeo: "no",
@@ -199,7 +200,7 @@ export const PERSONAS: Persona[] = [
       jobTitle: "Handläggare, utlandsplacering",
       employmentType: "temporary",
       workAbroadFrom: "2023-09",
-      workAbroadTo: "2026-08",
+      workAbroadTo: "2027-08",
       jobPoints:
         "1. Följer upp samarbeten med spanska motparter\n2. Deltar i möten på plats i Palma och Madrid\n3. Rapporterar hem till myndigheten",
       whyRaw:
@@ -396,7 +397,7 @@ export const PERSONAS: Persona[] = [
       abroadGuardian: "1",
       stayFrom: "2025-03",
       stayType: "limited",
-      stayTo: "2026-09",
+      stayTo: "2026-12",
       reason: "employment",
       employerForm: "foreign_company",
       isOwnerOrCeo: "no",
@@ -408,7 +409,7 @@ export const PERSONAS: Persona[] = [
       jobTitle: "Projektledare, nordisk försäljning",
       employmentType: "temporary",
       workAbroadFrom: "2025-03",
-      workAbroadTo: "2026-09",
+      workAbroadTo: "2026-12",
       jobPoints:
         "1. Samordnar kampanjer mot den svenska marknaden från hotellet i Palma\n2. Träffar leverantörer och kedjans svenska säljkontor\n3. Tjänsten är tidsbegränsad och kan inte skötas från Stockholm",
       whyRaw:
@@ -746,7 +747,7 @@ function toGrundskola(persona: Persona): Persona {
       program: "",
       programOther: "",
       studentDateOfBirth: shiftDate(persona.state.studentDateOfBirth, shift),
-      stayPlace: "Spanien, Mallorca",
+      stayPlace: "Mallorca",
       whyRaw: stripHermods(persona.state.whyRaw),
       whyGenerated: stripHermods(persona.state.whyGenerated),
       exceptionalReasons: stripHermods(persona.state.exceptionalReasons),

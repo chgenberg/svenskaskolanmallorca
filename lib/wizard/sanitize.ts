@@ -1,4 +1,5 @@
 import { trackOf } from "@/lib/tracks/config";
+import { CENSUS_ISO } from "./gates";
 import type { GenerateType, WizardState } from "./types";
 
 export function payloadForModel(state: WizardState, type: GenerateType) {
@@ -19,9 +20,9 @@ export function payloadForModel(state: WizardState, type: GenerateType) {
           ? `${state.guardian2.firstName} ${state.guardian2.lastName}`.trim()
           : `${state.guardian1.firstName} ${state.guardian1.lastName}`.trim(),
     stayFrom: state.stayFrom,
-    stayType: state.stayType,
-    stayTo: state.stayTo,
-    stayPlace: state.stayPlace,
+    stayPlace: "Mallorca",
+    activityMeetsStayRule: state.activityMeetsStayRule,
+    censusDate: CENSUS_ISO,
     employerForm: state.employerForm,
     category: state.category,
     employerName: state.employerName,

@@ -1,8 +1,9 @@
 "use client";
 
+import { useEffect } from "react";
 import { Alert, Checkbox, ChoiceCard, Field, TextInput } from "@/components/ui";
 import { feeReductionSentence, SCHOOL_FUTURE_SENTENCE, trackOf } from "@/lib/tracks/config";
-import { hasSwedishCitizen } from "@/lib/wizard/gates";
+import { CENSUS_ISO, CENSUS_LABEL_SV, hasSwedishCitizen, LOCKED_STAY_PLACE } from "@/lib/wizard/gates";
 import { useWizardStore } from "@/lib/wizard/store";
 import { stayWarning } from "@/lib/wizard/validation";
 
@@ -95,53 +96,9 @@ export function StudentStep() {
             onChange={(e) => patch({ studentDateOfBirth: e.target.value })}
           />
         </Field>
-        <Field label="Årskurs">
-          <div className={`grid gap-2 ${track.hasProgram ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-5"}`}>
-            {track.yearOptions.map((option) => (
-              <ChoiceCard
-                key={option.value}
-                title={option.label}
-                selected={state.year === option.value}
-                onSelect={() => patch({ year: option.value as typeof state.year })}
-              />
-            ))}
-          </div>
-        </Field>
-        {track.hasProgram ? (
-          <>
-            <Field label="Program">
-              <div className="grid gap-2">
-                <ChoiceCard
-                  title="Ekonomiprogrammet"
-                  selected={state.program === "ekonomi"}
-                  onSelect={() => patch({ program: "ekonomi" })}
-                />
-                <ChoiceCard
-                  title="Samhällsvetenskapsprogrammet"
-                  selected={state.program === "samhalle"}
-                  onSelect={() => patch({ program: "samhalle" })}
-                />
-                <ChoiceCard
-                  title="Annat"
-                  selected={state.program === "annat"}
-                  onSelect={() => patch({ program: "annat" })}
-                />
-              </div>
-            </Field>
-            {state.program === "annat" ? (
-              <Field label="Vilket program?">
-                <TextInput
-                  value={state.programOther}
-                  onChange={(e) => patch({ programOther: e.target.value })}
-                />
-              </Field>
-            ) : null}
-          </>
-        ) : (
-          <p className="text-[14px] leading-6 text-stone">
-            På blanketten: Ange utlandsskolan som <strong className="text-ink">{track.schoolNameOnForm}</strong>.
-          </p>
-        )}
+        <p className="text-[14px] leading-6 text-stone">
+          På blanketten: Ange utlandsskolan som <strong className="text-ink">{track.schoolNameOnForm}</strong>.
+        </p>
       </div>
     </>
   );
@@ -197,33 +154,6 @@ export function GuardiansStep() {
             ) : null}
           </div>
         </Field>
-
-        <Field label="Bor eleven tillsammans med den utlandsverksamma vårdnadshavaren på Mallorca?">
-          <div className="grid gap-2">
-            <ChoiceCard
-              title="Ja"
-              selected={state.livesWithAbroadGuardian === "yes"}
-              onSelect={() => patch({ livesWithAbroadGuardian: "yes" })}
-            />
-            <ChoiceCard
-              title="Nej, eleven bor hos den andra vårdnadshavaren"
-              selected={state.livesWithAbroadGuardian === "no"}
-              onSelect={() => patch({ livesWithAbroadGuardian: "no" })}
-            />
-            <ChoiceCard
-              title="Delad"
-              selected={state.livesWithAbroadGuardian === "shared"}
-              onSelect={() => patch({ livesWithAbroadGuardian: "shared" })}
-            />
-          </div>
-        </Field>
-        {state.livesWithAbroadGuardian === "no" ? (
-          <Alert tone="info">
-            {trackOf(state).hermods
-              ? "Hermods tar emot underlag där eleven medföljer vårdnadshavare. Berätta för skolan hur ni bor, så de kan bedöma."
-              : "Skolan tar oftast emot underlag där eleven medföljer vårdnadshavaren. Berätta för skolan hur ni bor, så de kan bedöma."}
-          </Alert>
-        ) : null}
       </div>
     </>
   );
@@ -285,11 +215,17 @@ export function StayStep() {
   const patch = useWizardStore((s) => s.patch);
   const warning = stayWarning(state);
 
+  useEffect(() => {
+    if (state.stayPlace !== LOCKED_STAY_PLACE) {
+      patch({ stayPlace: LOCKED_STAY_PLACE });
+    }
+  }, [state.stayPlace, patch]);
+
   return (
     <>
       <StepHeader
         title="Utlandsvistelsen"
-        help="Skolverket kräver stadigvarande vistelse — minst 6 månader. Vid studier: minst en hel termin."
+        help="Skolverket kräver stadigvarande vistelse — minst 6 månader, mätt mot anställningen eller verksamheten, och att den täcker 15 oktober."
       />
       <div className="space-y-6">
         <Field label="När började, eller börjar, den sammanhängande vistelsen utomlands?">
@@ -299,34 +235,33 @@ export function StayStep() {
             onChange={(e) => patch({ stayFrom: e.target.value })}
           />
         </Field>
-        <Field label="Hur länge är vistelsen planerad?">
+        <Field label="Var vistas den utlandsverksamma vårdnadshavaren?">
+          <ChoiceCard
+            title={LOCKED_STAY_PLACE}
+            description="Palma och ön räknas. Inte Barcelona, Madrid eller annan ort."
+            selected
+            disabled
+            onSelect={() => patch({ stayPlace: LOCKED_STAY_PLACE })}
+          />
+        </Field>
+        <Field
+          label={`Pågår anställningen eller verksamheten minst 6 månader och över ${CENSUS_LABEL_SV}?`}
+          hint={`Mätpunkten är ${CENSUS_LABEL_SV} ${CENSUS_ISO.slice(0, 4)} (${CENSUS_ISO}). Vid tjänstgöring fyller ni också utlandsperiod från och till under Tjänstgöringen.`}
+        >
           <div className="grid gap-2">
             <ChoiceCard
-              title="Tillsvidare / obestämd"
-              selected={state.stayType === "indefinite"}
-              onSelect={() => patch({ stayType: "indefinite", stayTo: "" })}
+              title="Ja"
+              description={`Tjänsten eller verksamheten täcker minst 6 månader och ${CENSUS_LABEL_SV}.`}
+              selected={state.activityMeetsStayRule === "yes"}
+              onSelect={() => patch({ activityMeetsStayRule: "yes", stayPlace: LOCKED_STAY_PLACE })}
             />
             <ChoiceCard
-              title="Tidsbegränsad"
-              selected={state.stayType === "limited"}
-              onSelect={() => patch({ stayType: "limited" })}
+              title="Nej"
+              description="Då räknas eleven oftast inte som underlag för läsåret."
+              selected={state.activityMeetsStayRule === "no"}
+              onSelect={() => patch({ activityMeetsStayRule: "no", stayPlace: LOCKED_STAY_PLACE })}
             />
           </div>
-        </Field>
-        {state.stayType === "limited" ? (
-          <Field label="Till och med">
-            <TextInput
-              type="month"
-              value={state.stayTo}
-              onChange={(e) => patch({ stayTo: e.target.value })}
-            />
-          </Field>
-        ) : null}
-        <Field label="Var vistas den utlandsverksamma vårdnadshavaren?">
-          <TextInput
-            value={state.stayPlace}
-            onChange={(e) => patch({ stayPlace: e.target.value })}
-          />
         </Field>
         {warning ? <Alert tone="warn">{warning}</Alert> : null}
       </div>

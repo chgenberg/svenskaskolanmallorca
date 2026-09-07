@@ -1,21 +1,90 @@
-import { trackOf } from "@/lib/tracks/config";
 import type { PackStatus, WizardState } from "./types";
+
+/** Mätpunkt för läsåret 2026/27. Engelska paketet: 15 de octubre. */
+export const CENSUS_ISO = "2026-10-15";
+export const CENSUS_LABEL_SV = "15 oktober";
+export const CENSUS_LABEL_ES = "15 de octubre";
+export const LOCKED_STAY_PLACE = "Mallorca";
+
+const BLOCKED_PLACES = /\b(barcelona|madrid|valencia|sevilla|bilbao)\b/i;
+
+export function isAllowedStayPlace(place: string): boolean {
+  const normalized = place.trim().toLowerCase();
+  if (!normalized) return false;
+  if (BLOCKED_PLACES.test(normalized)) return false;
+  return normalized.includes("mallorca") || normalized.includes("palma");
+}
+
+export function stayPlaceLabel(): string {
+  return LOCKED_STAY_PLACE;
+}
 
 function monthsBetween(from: string, to?: string): number | null {
   if (!from) return null;
-  const start = new Date(`${from}-01T00:00:00`);
-  if (Number.isNaN(start.getTime())) return null;
-  const end = to ? new Date(`${to}-01T00:00:00`) : new Date();
-  if (Number.isNaN(end.getTime())) return null;
+  const start = parsePeriodStart(from);
+  if (!start) return null;
+  const end = to ? parsePeriodStart(to) : new Date();
+  if (!end) return null;
   return (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
 }
 
+function parsePeriodStart(value: string): Date | null {
+  if (/^\d{4}-\d{2}$/.test(value)) {
+    const start = new Date(`${value}-01T00:00:00`);
+    return Number.isNaN(start.getTime()) ? null : start;
+  }
+  const start = new Date(`${value}T00:00:00`);
+  return Number.isNaN(start.getTime()) ? null : start;
+}
+
+function parsePeriodEnd(value: string): Date | null {
+  if (/^\d{4}-\d{2}$/.test(value)) {
+    const [year, month] = value.split("-").map(Number);
+    if (!year || !month) return null;
+    return new Date(year, month, 0, 23, 59, 59);
+  }
+  const end = new Date(`${value}T23:59:59`);
+  return Number.isNaN(end.getTime()) ? null : end;
+}
+
+function activityPeriod(state: WizardState): { from: string; to: string; ongoing: boolean } | null {
+  if (state.workAbroadFrom) {
+    return {
+      from: state.workAbroadFrom,
+      to: state.workAbroadTo,
+      ongoing: !state.workAbroadTo,
+    };
+  }
+  if (!state.stayFrom) return null;
+  return {
+    from: state.stayFrom,
+    to: "",
+    ongoing: state.activityMeetsStayRule === "yes",
+  };
+}
+
 export function stayTooShort(state: WizardState): boolean {
-  if (state.stayType === "indefinite") return false;
-  if (!state.stayFrom || !state.stayTo) return false;
-  const months = monthsBetween(state.stayFrom, state.stayTo);
+  if (state.activityMeetsStayRule === "no" && !state.workAbroadFrom) return true;
+  const period = activityPeriod(state);
+  if (!period) return false;
+  if (period.ongoing) return false;
+  const months = monthsBetween(period.from, period.to);
   const min = state.reason === "studies" ? 4 : 6;
   return months !== null && months < min;
+}
+
+export function missesCensusDate(state: WizardState): boolean {
+  if (state.activityMeetsStayRule === "no" && !state.workAbroadFrom) return true;
+  const period = activityPeriod(state);
+  if (!period) return false;
+  const census = new Date(`${CENSUS_ISO}T12:00:00`);
+  const from = parsePeriodStart(period.from);
+  if (!from) return false;
+  if (from > census) return true;
+  if (period.ongoing) return false;
+  const to = parsePeriodEnd(period.to);
+  if (!to) return false;
+  return to < census;
 }
 
 export function hasSwedishCitizen(state: WizardState): boolean {
@@ -52,19 +121,18 @@ export function getRisks(state: WizardState): string[] {
   if (stayTooShort(state)) {
     risks.push(
       state.reason === "studies"
-        ? "Planerad studietid är kortare än en hel termin."
-        : "Planerad utlandsvistelse är kortare än 6 månader.",
+        ? "Studie- eller verksamhetsperioden är kortare än en hel termin."
+        : "Anställningen eller verksamheten är kortare än 6 månader.",
     );
+  }
+  if (missesCensusDate(state)) {
+    risks.push(`Anställningen eller verksamheten täcker inte mätpunkten ${CENSUS_LABEL_SV}.`);
+  }
+  if (!isAllowedStayPlace(state.stayPlace) && state.stayPlace) {
+    risks.push("Utlandsvistelsen måste vara på Mallorca, inte till exempel Barcelona.");
   }
   if (!hasSwedishCitizen(state) && state.guardian1.citizenship) {
     risks.push("Minst en vårdnadshavare måste vara svensk medborgare.");
-  }
-  if (state.livesWithAbroadGuardian === "no") {
-    risks.push(
-      trackOf(state).hermods
-        ? "Hermods tar oftast emot underlag där eleven medföljer vårdnadshavaren."
-        : "Skolan tar oftast emot underlag där eleven medföljer vårdnadshavaren.",
-    );
   }
   if (state.dailyLanguage === "rarely" || state.studentSwedish === "insufficient") {
     risks.push("Svenskan i vardagen eller i undervisningen kan behöva bedömas av skolan.");

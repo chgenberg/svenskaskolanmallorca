@@ -87,6 +87,7 @@ export type WizardState = {
   stayType: "indefinite" | "limited" | "";
   stayTo: string;
   stayPlace: string;
+  activityMeetsStayRule: "yes" | "no" | "";
   reason: Reason | "";
   employerForm: EmployerForm | "";
   isOwnerOrCeo: "yes" | "no" | "part_owner" | "";

@@ -1,3 +1,4 @@
+import { CENSUS_ISO } from "./gates";
 import type { WizardState } from "./types";
 
 const LIFESTYLE =
@@ -66,7 +67,7 @@ export function checkWhyQuality(text: string, state: WizardState): QualityIssue[
   }
 
   const years = trimmed.match(/\b(19|20)\d{2}\b/g) ?? [];
-  const knownYears = [state.stayFrom, state.stayTo, state.workAbroadFrom, state.workAbroadTo, state.studentDateOfBirth]
+  const knownYears = [state.stayFrom, state.stayTo, state.workAbroadFrom, state.workAbroadTo, state.studentDateOfBirth, CENSUS_ISO]
     .filter(Boolean)
     .map((value) => value.slice(0, 4));
   const extraYears = years.filter((year) => !knownYears.includes(year));
