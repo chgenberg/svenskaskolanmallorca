@@ -12,6 +12,7 @@
     "personas:pdf": "tsx scripts/generate-persona-pdfs.ts"
   },
   "dependencies": {
+    "docx": "^9.7.1",
     "next": "16.3.1",
     "openai": "^6.49.0",
     "pdfkit": "^0.19.1",

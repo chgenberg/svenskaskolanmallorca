@@ -66,6 +66,11 @@ export function StartScreen() {
         </a>
         . Skolverket beslutar. Appen är inte Skolverket.
       </p>
+      <p className="mt-3 text-center text-[12px] text-stone/60">
+        <Link href="/fiesta" className="underline">
+          Fiesta — festgruppen (lösenord)
+        </Link>
+      </p>
     </main>
   );
 }

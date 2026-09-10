@@ -16,14 +16,18 @@ Ni söker inte själva. Skolan och Hermods skickar underlaget till Skolverket. V
 3. **New Variable**
    - Name: `OPENAI_API_KEY`
    - Value: din OpenAI-nyckel (samma som i OpenAI Dashboard)
+   - Name: `FIESTA_PASSWORD`
+   - Value: festgruppens gemensamma lösenord (inte i git)
 4. Spara. Railway gör en ny deploy. Nyckeln syns inte i git.
+
+Fiesta ligger bakom lösenord på `/fiesta`. Utan `FIESTA_PASSWORD` går det inte att öppna tavlan. Tavlan sparas som JSON på servern (`data/fiesta-board.json`, eller `FIESTA_DATA_PATH` om ni sätter en Railway-volym).
 
 ## Starta lokalt
 
 ```bash
 npm install
 cp .env.example .env.local
-# klistra in OPENAI_API_KEY=... bara i .env.local
+# klistra in OPENAI_API_KEY=... och FIESTA_PASSWORD=... bara i .env.local
 npm run dev
 ```
 
